@@ -6,13 +6,15 @@ const sequelize = new Sequelize('dau_gia_Gif', 'root', null, {
   logging: console.log,
 }); 
 
-let connectDB = async() => { 
-    try {
-        await sequelize.authenticate();
-        console.log('Connection has been established successfully.');
-      } catch (error) {
-        console.error('Unable to connect to the database:', error);
-      }
-}
+let connectDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error.message);
+    console.error('Stack trace:', error.stack);
+  }
+};
+
 
 module.exports = connectDB;
