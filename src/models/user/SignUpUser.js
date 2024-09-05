@@ -1,9 +1,9 @@
 import { Model, DataTypes } from 'sequelize';
-import db from './index.js'; // Đảm bảo đường dẫn đúng
+import db from '../index.js'; 
 
 class SignUpUser extends Model {
   static associate(models) {
-    // Định nghĩa các liên kết ở đây nếu có
+    
   }
 }
 
@@ -11,7 +11,7 @@ SignUpUser.init({
   nickname: DataTypes.STRING,
   email: {
     type: DataTypes.STRING,
-    unique: true,  // Đảm bảo rằng email là duy nhất
+    unique: true,  
     allowNull: false
   },
   password: DataTypes.STRING

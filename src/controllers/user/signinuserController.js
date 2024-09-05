@@ -1,6 +1,6 @@
-import {handleUserSignIn} from '../services/SignInUserServices';
+import {handleUserSignIn} from '../../services/SignInUserServices';
 
-export const handleLogin = async (req, res) => {
+export const handleLoginUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -14,7 +14,7 @@ export const handleLogin = async (req, res) => {
         const userData = await handleUserSignIn(email, password);
         return res.status(200).json({
             errorCode: userData.errorCode,
-            message: userData.errorMessage,
+            message: userData.message,
             user: userData.SignIn || {}
         });
     } catch (error) {

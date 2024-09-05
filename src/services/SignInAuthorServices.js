@@ -1,15 +1,13 @@
 import bcrypt from 'bcrypt';
-import SignUpUser from '../models/user/SignUpUser.js'; 
-import { reject } from 'bcrypt/promises.js';
-import { where } from 'sequelize';
+import SignUpAuthor from '../models/author/SignUpAuthor'; ;
 
-export const handleUserSignIn = async (email, password) => {
+export const handleAuthorSignIn = async (email, password) => {
     try {
         const userData = {};
 
         const isExit = await checkEmail(email);
         console.log('Email tồn tại', isExit);
-        const signIn = await SignUpUser.findOne({
+        const signIn = await SignUpAuthor.findOne({
             where: { email: email },
             attributes: ['email', 'password'],
             raw: true,
@@ -22,7 +20,9 @@ export const handleUserSignIn = async (email, password) => {
                 return {
                     errorCode: 0,
                     message: 'Login successful',
-                    user: signIn
+                    user: {
+                        email: signIn.email,
+                    }
                 };
             } else {
                 return {
@@ -43,10 +43,11 @@ export const handleUserSignIn = async (email, password) => {
         throw e;
     }
 };
+
 export const checkEmail = (userEmail) =>{
     return new Promise(async(resole , reject) => {
         try{
-            const user = await SignUpUser.findOne({
+            const user = await SignUpAuthor.findOne({
                 where: {email : userEmail}
             })
           if(user){

@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
-import SignUpUser from '../models/SignUpUser.js'; 
+import SignUpUser from '../../models/user/SignUpUser.js'; 
 
 const saltRounds = 10;
 
-export const handleSignUp = async (req, res) => {
+export const handleSignUpUser = async (req, res) => {
     try {
         const { nickname, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, saltRounds);

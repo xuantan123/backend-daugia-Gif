@@ -1,13 +1,26 @@
 import express from 'express';
-import { handleSignUp } from '../controllers/signupuserController.js';
-import { handleLogin } from '../controllers/signinuserController.js';
+import { handleSignUpUser } from '../controllers/user/signupuserController.js';
+import { handleLoginUser } from '../controllers/user/signinuserController.js';
+import { handleProfileUser , handleEditProfileUser } from '../controllers/user/profileuserControllers.js';
+import { handleSignUpAuthor } from '../controllers/author/signupauthorController.js';
+import { handleLoginAuthor } from '../controllers/author/signinauthorController.js';
+import { handleProfileAuthor , handleEditProfileAuthor } from '../controllers/author/profileauthorController.js';
+import { handleProduct } from '../controllers/author/productController.js';
 
 const router = express.Router();
 
 const initWebRoutes = (app) => {
-    router.post('/api/signup', handleSignUp);
-    router.post('/api/login', handleLogin);
+    router.post('/api/signupuser', handleSignUpUser);
+    router.post('/api/loginuser', handleLoginUser);
+    router.post('/api/profileuser', handleProfileUser);
+    router.put('/api/profileuser/:id', handleEditProfileUser)
+
+    router.post('/api/signupauthor', handleSignUpAuthor);
+    router.post('/api/loginauthor', handleLoginAuthor);
+    router.post('/api/profileauthor', handleProfileAuthor);
+    router.put('/api/profileAuthor/:id', handleEditProfileAuthor);
     
+    router.post('/api/product', handleProduct)
     router.get('/', (req, res) => {
         res.send('Welcome to the API');
     });
