@@ -12,6 +12,9 @@ module.exports = {
       fullname: {
         type: Sequelize.STRING
       },
+      dateofbirth: {
+        type: Sequelize.DATE
+      },
       gender: {
         type: Sequelize.BOOLEAN
       },

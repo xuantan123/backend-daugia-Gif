@@ -9,6 +9,7 @@ class ProfileUser extends Model {
 
 ProfileUser.init({
   fullname: DataTypes.STRING,
+  dateofbirth: DataTypes.DATE,
   gender: DataTypes.BOOLEAN,
   country: DataTypes.STRING,
   walletaddress: DataTypes.STRING,

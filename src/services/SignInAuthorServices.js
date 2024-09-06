@@ -6,7 +6,7 @@ export const handleAuthorSignIn = async (email, password) => {
         const userData = {};
 
         const isExit = await checkEmail(email);
-        console.log('Email tồn tại', isExit);
+        console.log('Email exists:', isExit);
         const signIn = await SignUpAuthor.findOne({
             where: { email: email },
             attributes: ['email', 'password'],
@@ -15,7 +15,7 @@ export const handleAuthorSignIn = async (email, password) => {
         console.log('User đƯợc tìm thấY là', signIn);
         if (signIn) {
             const check = await bcrypt.compare(password, signIn.password);
-            console.log("So sánh mật khẩu:", check);
+            console.log("Compare passwords:", check);
             if (check) {
                 return {
                     errorCode: 0,

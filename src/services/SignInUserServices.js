@@ -8,16 +8,16 @@ export const handleUserSignIn = async (email, password) => {
         const userData = {};
 
         const isExit = await checkEmail(email);
-        console.log('Email tồn tại', isExit);
+        console.log('Email exists:', isExit);
         const signIn = await SignUpUser.findOne({
             where: { email: email },
             attributes: ['email', 'password'],
             raw: true,
         });
-        console.log('User đƯợc tìm thấY là', signIn);
+        console.log('User found is', signIn);
         if (signIn) {
             const check = await bcrypt.compare(password, signIn.password);
-            console.log("So sánh mật khẩu:", check);
+            console.log("Compare passwords:", check);
             if (check) {
                 return {
                     errorCode: 0,

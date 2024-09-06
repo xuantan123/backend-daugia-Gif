@@ -10,7 +10,7 @@ export const handleProduct = async(req,res) => {
         status,
         image,
       });
-      console.log('thong tin tac gia', newProduct);
+      console.log('Customer information', newProduct);
         res.status(200).json({
             message: 'Profile author created successfully',
             user: newProduct,
