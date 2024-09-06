@@ -6,8 +6,8 @@ import { handleSignUpAuthor } from '../controllers/author/signupauthorController
 import { handleLoginAuthor } from '../controllers/author/signinauthorController.js';
 import { handleProfileAuthor , handleEditProfileAuthor } from '../controllers/author/profileauthorController.js';
 import { handleProduct } from '../controllers/author/productController.js';
-import { handleEmail } from '../controllers/user/EmailUserControllers.js';
-
+import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
+import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
 
 const router = express.Router();
 
@@ -16,12 +16,13 @@ const initWebRoutes = (app) => {
     router.post('/api/loginuser', handleLoginUser);
     router.post('/api/profileuser', handleProfileUser);
     router.put('/api/profileuser/:id', handleEditProfileUser)
-    router.get('/api/signupuser/:email', handleEmail);
+    router.get('/api/signupuser/:email', handleEmailUser);
 
     router.post('/api/signupauthor', handleSignUpAuthor);
     router.post('/api/loginauthor', handleLoginAuthor);
     router.post('/api/profileauthor', handleProfileAuthor);
     router.put('/api/profileAuthor/:id', handleEditProfileAuthor);
+    router.get('/api/signupauthor/:email', handlEmailAuthor);
     
     router.post('/api/product', handleProduct);
 

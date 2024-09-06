@@ -1,12 +1,12 @@
-import SignUpUser from '../../models/user/SignUpUser.js';
+import SignUpAuhtor from '../../models/author/SignUpAuthor';
 
-export const handleEmailUser = async (req, res) => {
+export const handlEmailAuthor = async (req, res) => {
     const email = req.params.email;
     console.log("Email requested:", email); 
 
     try {
         
-        const user = await SignUpUser.findOne({ where: { email } });
+        const user = await SignUpAuhtor.findOne({ where: { email } });
         
         if (user) {
             
