@@ -1,4 +1,4 @@
-import SignUpAuhtor from '../../models/author/SignUpAuthor';
+import ProfileAuthor from '../../models/author/ProfileAuthor';
 
 export const handlEmailAuthor = async (req, res) => {
     const email = req.params.email;
@@ -6,7 +6,7 @@ export const handlEmailAuthor = async (req, res) => {
 
     try {
         
-        const user = await SignUpAuhtor.findOne({ where: { email } });
+        const user = await ProfileAuthor.findOne({ where: { email } });
         
         if (user) {
             

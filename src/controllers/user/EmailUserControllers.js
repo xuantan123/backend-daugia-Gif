@@ -1,4 +1,4 @@
-import SignUpUser from '../../models/user/SignUpUser.js';
+import ProfileUser from '../../models/user/ProfileUser';
 
 export const handleEmailUser = async (req, res) => {
     const email = req.params.email;
@@ -6,7 +6,7 @@ export const handleEmailUser = async (req, res) => {
 
     try {
         
-        const user = await SignUpUser.findOne({ where: { email } });
+        const user = await ProfileUser.findOne({ where: { email } });
         
         if (user) {
             

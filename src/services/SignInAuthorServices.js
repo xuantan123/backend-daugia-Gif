@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import SignUpAuthor from '../models/author/SignUpAuthor'; ;
+import ProfileAuthor from '../models/author/ProfileAuthor'; ;
 
 export const handleAuthorSignIn = async (email, password) => {
     try {
@@ -7,7 +7,7 @@ export const handleAuthorSignIn = async (email, password) => {
 
         const isExit = await checkEmail(email);
         console.log('Email exists:', isExit);
-        const signIn = await SignUpAuthor.findOne({
+        const signIn = await ProfileAuthor.findOne({
             where: { email: email },
             attributes: ['email', 'password'],
             raw: true,
@@ -47,7 +47,7 @@ export const handleAuthorSignIn = async (email, password) => {
 export const checkEmail = (userEmail) =>{
     return new Promise(async(resole , reject) => {
         try{
-            const user = await SignUpAuthor.findOne({
+            const user = await ProfileAuthor.findOne({
                 where: {email : userEmail}
             })
           if(user){

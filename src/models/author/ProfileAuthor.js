@@ -8,6 +8,13 @@ class ProfileAuthor extends Model {
 }
 
 ProfileAuthor.init({
+  nickname: DataTypes.STRING,
+  email: {
+    type: DataTypes.STRING,
+    unique: true,  
+    allowNull: false
+  },
+  password: DataTypes.STRING,
   fullname: DataTypes.STRING,
   dateofbirth : DataTypes.DATE,
   gender: DataTypes.BOOLEAN,

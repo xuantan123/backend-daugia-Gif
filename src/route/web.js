@@ -14,9 +14,12 @@ const router = express.Router();
 const initWebRoutes = (app) => {
     router.post('/api/signupuser', handleSignUpUser);
     router.post('/api/loginuser', handleLoginUser);
-    router.post('/api/profileuser', handleProfileUser);
-    router.put('/api/profileuser/:id', handleEditProfileUser)
-    router.get('/api/signupuser/:email', handleEmailUser);
+    router.route('/api/profileuser/:email')
+        .post(handleProfileUser)
+        .get(handleEmailUser);
+    router.post('/api/profileuser',handleProfileUser);
+    router.put('/api/profileuser/:id', handleEditProfileUser);
+
 
     router.post('/api/signupauthor', handleSignUpAuthor);
     router.post('/api/loginauthor', handleLoginAuthor);

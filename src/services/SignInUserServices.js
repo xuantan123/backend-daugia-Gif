@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import SignUpUser from '../models/user/SignUpUser.js'; 
+import ProfileUser from '../models/user/ProfileUser'; 
 import { reject } from 'bcrypt/promises.js';
 import { where } from 'sequelize';
 
@@ -9,7 +9,7 @@ export const handleUserSignIn = async (email, password) => {
 
         const isExit = await checkEmail(email);
         console.log('Email exists:', isExit);
-        const signIn = await SignUpUser.findOne({
+        const signIn = await ProfileUser.findOne({
             where: { email: email },
             attributes: ['email', 'password'],
             raw: true,
@@ -46,7 +46,7 @@ export const handleUserSignIn = async (email, password) => {
 export const checkEmail = (userEmail) =>{
     return new Promise(async(resole , reject) => {
         try{
-            const user = await SignUpUser.findOne({
+            const user = await ProfileUser.findOne({
                 where: {email : userEmail}
             })
           if(user){
