@@ -8,7 +8,7 @@ import { handleLoginAuthor } from '../controllers/author/signinauthorController.
 import { handleProfileAuthor, handleEditProfileAuthor } from '../controllers/author/profileauthorController.js';
 import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
 import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
-import { deleteProduct, editProduct, processProduct, getProduct } from '../controllers/author/productController.js';
+import { deleteProduct, editProduct, processProduct, getProduct , getImage } from '../controllers/author/productController.js';
 
 const router = express.Router();
 
@@ -31,6 +31,7 @@ const initWebRoutes = (app) => {
     router.post('/api/products', upload.single('image'), processProduct);
     router.put('/api/products/:id', upload.single('image'), editProduct);
     router.get('/api/products/:email', getProduct);
+    router.get('/api/images/:filename', getImage);
     router.delete('/api/products/:id', deleteProduct);
 
     router.get('/', (req, res) => {

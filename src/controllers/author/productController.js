@@ -1,5 +1,6 @@
 import ProductAuthor from '../../models/author/ProductsAuthor';
 import path from 'path';
+import fs from 'fs';
 import multer from 'multer';
 
 
@@ -22,7 +23,7 @@ export const processProduct = async (req, res) => {
     const imageFile = req.file;
 
     if (!imageFile) {
-      return res.status(400).json({ message: 'Ảnh là bắt buộc' });
+      return res.status(400).json({ message: 'Photos are required' });
     }
 
     console.log('Filename:', imageFile.filename);
@@ -52,7 +53,27 @@ export const processProduct = async (req, res) => {
     });
   }
 };
+export const getImage = (req, res) => {
+  try {
+    const { filename } = req.params;
 
+   
+    const imagePath = path.join(__dirname, '../../uploads', filename);
+
+    
+    if (fs.existsSync(imagePath)) {
+      
+      res.sendFile(imagePath);
+    } else {
+      res.status(404).json({ message: 'Image not found' });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error retrieving image',
+      error: error.message,
+    });
+  }
+};
 export const getProduct = async (req, res) => {
   try {
     const { email } = req.params;
