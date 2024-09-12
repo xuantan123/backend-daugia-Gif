@@ -8,11 +8,12 @@ class ProductAuthor extends Model {
 }
 
 ProductAuthor.init({
+  email: DataTypes.STRING,
   productname: DataTypes.STRING,
-  description: DataTypes.BOOLEAN,
+  description: DataTypes.STRING,
   price: DataTypes.STRING,
   status: DataTypes.STRING,
-  image: DataTypes.TEXT,
+  image: DataTypes.BLOB,
 }, {
   sequelize: db.sequelize,
   modelName: 'ProductAuthor',

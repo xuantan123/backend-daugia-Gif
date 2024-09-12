@@ -1,62 +1,110 @@
 import ProfileAuthor from "../../models/author/ProfileAuthor";
+import bcrypt from 'bcrypt';
+import dayjs from 'dayjs';
 
-export const handleProfileAuthor = async(req,res) => { 
-     try{
-        const {fullname , dateofbirth , gender , country , walletaddress } = req.body;
-        const newAuthor = await ProfileAuthor.create({
-            fullname,
-            dateofbirth,
-            gender,
-            country,
-            walletaddress,
-        });
-        console.log('thong tin tac gia', newAuthor);
-        res.status(200).json({
-            errorCode : 0 ,
-            message: 'Profile author created successfully',
-            user: newAuthor,
-        });
-     }catch(error){
-        console.error('Error during update profile:', error);
-        res.status(500).json({
-            errorCode : 3 ,
-            message: 'Create profile author failed',
-            error: error.message
-        });
-     }
-}
+const saltRounds = 10;
 
-export const handleEditProfileAuthor = async(req,res) => { 
-    try{
-        const { id } = req.params;
-        const { fullname , dateofbirth ,gender , country , walletaddress } = req.body;
+const convertDateToDatabaseFormat = (inputDate) => {
+    return dayjs(inputDate, 'DD-MM-YYYY').format('YYYY-MM-DD');
+};
 
-        const author = await ProfileAuthor.findByPk(id);
 
-        if (!author) {
-            return res.status(404).json({
-                message: 'Author not found'
+const convertGender = (gender) => {
+    console.log('Converting gender:', gender);
+    if (gender === 'Male') return true;
+    if (gender === 'Female') return false;
+    return null; 
+};
+
+export const handleProfileAuthor = async (req, res) => { 
+    try {
+        const { nickname, email, password, fullname, dateofbirth, gender, country, walletaddress } = req.body;
+
+        if (!nickname || !email || !password || !fullname || !dateofbirth || !gender || !country || !walletaddress) {
+            return res.status(400).json({
+                errorCode: 2,
+                message: 'Missing required fields'
             });
         }
-        const updateAuthor = await author.update({
+
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+        const dateOfBirth = convertDateToDatabaseFormat(dateofbirth); 
+        const GenderEdit = convertGender(gender);
+
+        const newUser = await ProfileAuthor.create({
+            nickname,
+            email,
+            password: hashedPassword,
             fullname,
-            dateofbirth,
-            gender,
+            dateofbirth: dateOfBirth,
+            gender: GenderEdit,
             country,
             walletaddress,
         });
-        console.log('thong tin vua cap nhap xong: ' , updateAuthor);
-        res.status(200).json({
-            errorCode :  0,
-            message: 'Profile updated Author successfully',
-            user: updateAuthor,
+
+        res.status(201).json({
+            errorCode: 0,
+            message: 'Profile user created successfully',
+            user: newUser
         });
-    } catch(error){
-        console.error('Error during profile update:', error);
+    } catch (error) {
+        console.error('Error during profile creation:', error);
         res.status(500).json({
-            errorCode : 3 ,
-            message: 'Profile update failed',
-            error: error.message,
+            errorCode: 3,
+            message: 'Profile user creation failed',
+            error: error.message
         });
     }
-}
+};
+
+export const handleEditProfileAuthor = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nickname, email, password, fullname, dateofbirth, gender, country, walletaddress } = req.body;
+
+        console.log('Received data:', req.body); 
+
+        const dateOfBirth = convertDateToDatabaseFormat(dateofbirth); 
+        const GenderEdit = convertGender(gender);
+        console.log('Gender received:', gender);
+        const user = await ProfileAuthor.findByPk(id);
+
+        if (!user) {
+            return res.status(404).json({
+                errorCode: 1,
+                message: 'User not found'
+            });
+        }
+
+        const updatedFields = {
+            nickname,
+            email,
+            fullname,
+            dateofbirth: dateOfBirth,
+            gender: GenderEdit,
+            country,
+            walletaddress
+        };
+
+        if (password) {
+            updatedFields.password = await bcrypt.hash(password, saltRounds);
+        }
+
+        await user.update(updatedFields);
+
+        const updatedUser = await ProfileAuthor.findByPk(id);
+
+        res.status(200).json({
+            errorCode: 0,
+            message: 'Profile updated successfully',
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error('Error during profile update:', error);
+        res.status(500).json({
+            errorCode: 3,
+            message: 'Profile update failed',
+            error: error.message
+        });
+    }
+};

@@ -9,6 +9,9 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      email: {
+       type: Sequelize.STRING
+      },
       productname: {
         type: Sequelize.STRING
       },
@@ -22,7 +25,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       image: {
-        type: Sequelize.TEXT
+        type: Sequelize.BLOB('long'),
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,

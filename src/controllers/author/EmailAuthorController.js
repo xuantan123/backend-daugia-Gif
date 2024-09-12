@@ -6,20 +6,20 @@ export const handlEmailAuthor = async (req, res) => {
 
     try {
         
-        const user = await ProfileAuthor.findOne({ where: { email } });
+        const author = await ProfileAuthor.findOne({ where: { email } });
         
-        if (user) {
+        if (author) {
             
             res.status(200).json({
                 errorCode: 0,
-                message: 'Get user information',
-                data: user
+                message: 'Get Author information',
+                data: author
             });
         } else {
            
             res.status(404).json({
                 errorCode: 1,
-                message: 'User not found'
+                message: 'Author not found'
             });
         }
     } catch (error) {
