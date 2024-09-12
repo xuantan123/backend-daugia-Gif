@@ -2,138 +2,146 @@ import ProductAuthor from '../../models/author/ProductsAuthor';
 import path from 'path';
 import multer from 'multer';
 
+
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `${Date.now()}${ext}`);
-    },
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${Date.now()}${ext}`);
+  },
 });
 
 const upload = multer({ storage: storage });
 
+
 export const processProduct = async (req, res) => {
-    try {
-        const { email, productname, description, price, status } = req.body;
-        const imageFile = req.file;
+  try {
+    const { email, productname, description, price, status } = req.body;
+    const imageFile = req.file;
 
-        if (!imageFile) {
-            return res.status(400).json({ message: 'Ảnh là bắt buộc' });
-        }
-
-        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
-
-        const newProduct = await ProductAuthor.create({
-            email,
-            productname,
-            description,
-            price,
-            status,
-            image: imageUrl,
-        });
-
-        res.status(200).json({
-            errorCode: 0,
-            message: 'Tạo sản phẩm thành công',
-            product: newProduct,
-        });
-    } catch (error) {
-        console.error('Lỗi khi tạo sản phẩm:', error); 
-        res.status(500).json({
-            errorCode: 3,
-            message: 'Tạo sản phẩm không thành công',
-            error: error.message,
-        });
+    if (!imageFile) {
+      return res.status(400).json({ message: 'Ảnh là bắt buộc' });
     }
+
+    console.log('Filename:', imageFile.filename);
+
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
+
+    const newProduct = await ProductAuthor.create({
+      email,
+      productname,
+      description,
+      price,
+      status,
+      image: imageUrl,
+    });
+
+    res.status(200).json({
+      errorCode: 0,
+      message: 'Create successful products',
+      product: newProduct,
+    });
+  } catch (error) {
+    console.error('Error when creating product:', error);
+    res.status(500).json({
+      errorCode: 3,
+      message: 'Product creation failed',
+      error: error.message,
+    });
+  }
 };
 
 export const getProduct = async (req, res) => {
   try {
-      const { email } = req.params;
+    const { email } = req.params;
 
-      if (!email) {
-          return res.status(400).json({ message: 'Email không được để trống' });
-      }
+    if (!email) {
+      return res.status(400).json({ message: 'Email cannot be blank' });
+    }
 
-      const products = await ProductAuthor.findAll({ where: { email } });
+    const products = await ProductAuthor.findAll({ where: { email } });
 
-      if (products.length > 0) {
-          res.status(200).json({
-              errorCode: 0,
-              message: 'Lấy sản phẩm thành công',
-              products,
-          });
-          console.log('Product Author: ', products);
-      } else {
-          res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
-      }
-  } catch (error) {
-      res.status(500).json({
-          errorCode: 3,
-          message: 'Lỗi khi lấy sản phẩm',
-          error: error.message,
+    if (products.length > 0) {
+      res.status(200).json({
+        errorCode: 0,
+        message: 'Get the product successfully',
+        products,
       });
+      console.log('Product Author: ', products);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({
+      errorCode: 3,
+      message: 'Error when retrieving product',
+      error: error.message,
+    });
   }
 };
+
 export const deleteProduct = async (req, res) => {
   try {
-      const { id } = req.params; 
+    const { id } = req.params;
 
-      if (!id) {
-          return res.status(400).json({ message: 'ID không được để trống' });
-      }
+    if (!id) {
+      return res.status(400).json({ message: 'ID cannot be empty' });
+    }
 
-      const product = await ProductAuthor.findByPk(id); 
+    const product = await ProductAuthor.findByPk(id);
 
-      if (product) {
-          await product.destroy();
-          res.status(200).json({ message: 'Xóa sản phẩm thành công' });
-      } else {
-          res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
-      }
+    if (product) {
+      await product.destroy();
+      res.status(200).json({ message: 'Product deletion successful' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
   } catch (error) {
-      res.status(500).json({
-          message: 'Xóa sản phẩm không thành công',
-          error: error.message,
-      });
+    res.status(500).json({
+      message: 'Product deletion failed',
+      error: error.message,
+    });
   }
 };
+
 export const editProduct = async (req, res) => {
   try {
-      const { id } = req.params; 
-      const { productname, description, price, status, image } = req.body;
+    const { id } = req.params;
+    const { productname, description, price, status } = req.body;
+    const imageFile = req.file;
 
-      if (!id) {
-          return res.status(400).json({ message: 'ID không được để trống' });
+    if (!id) {
+      return res.status(400).json({ message: 'ID cannot be empty' });
+    }
+
+    const product = await ProductAuthor.findByPk(id);
+
+    if (product) {
+      product.productname = productname || product.productname;
+      product.description = description || product.description;
+      product.price = price || product.price;
+      product.status = status || product.status;
+
+      if (imageFile) {
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
+        product.image = imageUrl;
       }
 
-   
-      const product = await ProductAuthor.findByPk(id);
+      await product.save();
 
-      if (product) {
-          
-          product.productname = productname || product.productname;
-          product.description = description || product.description;
-          product.price = price || product.price;
-          product.status = status || product.status;
-          product.image = image || product.image;
-
-        
-          await product.save();
-
-          res.status(200).json({
-              message: 'Cập nhật sản phẩm thành công',
-              product,
-          });
-      } else {
-          res.status(404).json({ message: 'Sản phẩm không tìm thấy' });
-      }
-  } catch (error) {
-      res.status(500).json({
-          message: 'Cập nhật sản phẩm không thành công',
-          error: error.message,
+      res.status(200).json({
+        message: 'Product update successful',
+        product,
       });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: 'Product update failed',
+      error: error.message,
+    });
   }
 };
