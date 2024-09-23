@@ -1,34 +1,37 @@
 import ProductAuthor from '../../models/author/ProductsAuthor';
+import cloudinary from 'cloudinary';
 import path from 'path';
+import crypto from 'crypto';
 import fs from 'fs';
-import multer from 'multer';
 
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
-const upload = multer({ storage: storage });
-
 
 export const processProduct = async (req, res) => {
   try {
     const { email, productname, description, price, status } = req.body;
     const imageFile = req.file;
-    
+
     if (!imageFile) {
       return res.status(400).json({ message: 'Photos are required' });
     }
 
-    console.log('Filename:', imageFile);
+    const timestamp = Math.floor(Date.now() / 1000);
+    const signature = crypto
+      .createHash('sha1')
+      .update(`timestamp=${timestamp}${process.env.CLOUDINARY_API_SECRET}`)
+      .digest('hex');
 
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
+    const result = await cloudinary.v2.uploader.upload(imageFile.path, {
+      api_key: process.env.CLOUDINARY_API_KEY,
+      timestamp,
+      signature,
+    });
+
+    const imageUrl = result.secure_url;
 
     const newProduct = await ProductAuthor.create({
       email,
@@ -53,18 +56,16 @@ export const processProduct = async (req, res) => {
     });
   }
 };
+// Lấy ảnh sản phẩm từ thư mục /uploads (nếu dùng lưu trữ cục bộ)
 export const getImage = (req, res) => {
   try {
     const { filename } = req.params;
-
-  
     const imagePath = path.join(__dirname, '../../uploads', filename);
 
     if (fs.existsSync(imagePath)) {
-   
       const ext = path.extname(filename).toLowerCase();
       let mimeType;
-      
+
       switch (ext) {
         case '.jpg':
         case '.jpeg':
@@ -92,6 +93,8 @@ export const getImage = (req, res) => {
     });
   }
 };
+
+// Lấy tất cả sản phẩm theo email
 export const getProduct = async (req, res) => {
   try {
     const { email } = req.params;
@@ -108,7 +111,6 @@ export const getProduct = async (req, res) => {
         message: 'Get the product successfully',
         products,
       });
-      console.log('Product Author: ', products);
     } else {
       res.status(404).json({ message: 'Product not found' });
     }
@@ -121,6 +123,7 @@ export const getProduct = async (req, res) => {
   }
 };
 
+// Xóa sản phẩm theo ID
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -145,6 +148,7 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
+// Cập nhật sản phẩm
 export const editProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -164,7 +168,17 @@ export const editProduct = async (req, res) => {
       product.status = status || product.status;
 
       if (imageFile) {
-        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
+        let imageUrl;
+        if (process.env.USE_CLOUDINARY === 'true') {
+          const result = await cloudinary.uploader.upload(imageFile.path, {
+            folder: 'products',
+            resource_type: 'image',
+          });
+          imageUrl = result.secure_url;
+          fs.unlinkSync(imageFile.path); // Xóa file tạm
+        } else {
+          imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
+        }
         product.image = imageUrl;
       }
 

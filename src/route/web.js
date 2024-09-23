@@ -9,7 +9,7 @@ import { handleProfileAuthor, handleEditProfileAuthor } from '../controllers/aut
 import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
 import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
 import { deleteProduct, editProduct, processProduct, getProduct , getImage , getAllProductsByEmail , getAllImagesByEmail } from '../controllers/author/productController.js';
-import { getUserStats , getUserDetails, getAuthorProduct } from '../controllers/admin/adminController.js';
+import { getUserStats , getUserDetails, getAuthorProduct  } from '../controllers/admin/adminController.js';
 const router = express.Router();
 
 const initWebRoutes = (app) => {
@@ -29,9 +29,9 @@ const initWebRoutes = (app) => {
     router.put('/api/profileauthor/:id', handleEditProfileAuthor);
 
     router.post('/api/products', upload.single('image'), processProduct);
-    router.put('/api/products/:id', upload.single('image'), editProduct);
-    router.get('/api/products/:email', getProduct);
     router.get('/api/images/:filename', getImage);
+    router.get('/api/products/:email', getProduct);
+    router.put('/api/products/:id', upload.single('image'), editProduct);
     router.delete('/api/products/:id', deleteProduct);
     
     router.get('/api/admin/stats', getUserStats);

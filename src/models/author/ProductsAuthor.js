@@ -13,7 +13,7 @@ ProductAuthor.init({
   description: DataTypes.STRING,
   price: DataTypes.STRING,
   status: DataTypes.STRING,
-  image: DataTypes.BLOB,
+  image: DataTypes.STRING,
 }, {
   sequelize: db.sequelize,
   modelName: 'ProductAuthor',
