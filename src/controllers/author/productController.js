@@ -21,12 +21,12 @@ export const processProduct = async (req, res) => {
   try {
     const { email, productname, description, price, status } = req.body;
     const imageFile = req.file;
-
+    
     if (!imageFile) {
       return res.status(400).json({ message: 'Photos are required' });
     }
 
-    console.log('Filename:', imageFile.filename);
+    console.log('Filename:', imageFile);
 
     const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${imageFile.filename}`;
 
@@ -57,12 +57,30 @@ export const getImage = (req, res) => {
   try {
     const { filename } = req.params;
 
-   
+  
     const imagePath = path.join(__dirname, '../../uploads', filename);
 
-    
     if (fs.existsSync(imagePath)) {
+   
+      const ext = path.extname(filename).toLowerCase();
+      let mimeType;
       
+      switch (ext) {
+        case '.jpg':
+        case '.jpeg':
+          mimeType = 'image/jpeg';
+          break;
+        case '.png':
+          mimeType = 'image/png';
+          break;
+        case '.gif':
+          mimeType = 'image/gif';
+          break;
+        default:
+          mimeType = 'application/octet-stream';
+      }
+
+      res.setHeader('Content-Type', mimeType);
       res.sendFile(imagePath);
     } else {
       res.status(404).json({ message: 'Image not found' });

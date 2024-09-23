@@ -8,8 +8,8 @@ import { handleLoginAuthor } from '../controllers/author/signinauthorController.
 import { handleProfileAuthor, handleEditProfileAuthor } from '../controllers/author/profileauthorController.js';
 import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
 import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
-import { deleteProduct, editProduct, processProduct, getProduct , getImage } from '../controllers/author/productController.js';
-
+import { deleteProduct, editProduct, processProduct, getProduct , getImage , getAllProductsByEmail , getAllImagesByEmail } from '../controllers/author/productController.js';
+import { getUserStats , getUserDetails, getAuthorProduct } from '../controllers/admin/adminController.js';
 const router = express.Router();
 
 const initWebRoutes = (app) => {
@@ -33,7 +33,11 @@ const initWebRoutes = (app) => {
     router.get('/api/products/:email', getProduct);
     router.get('/api/images/:filename', getImage);
     router.delete('/api/products/:id', deleteProduct);
-
+    
+    router.get('/api/admin/stats', getUserStats);
+    router.get('/api/admin/details', getUserDetails);
+    router.get('/api/admin/products', getAuthorProduct);
+    
     router.get('/', (req, res) => {
         res.send('Welcome to the API');
     });
