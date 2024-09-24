@@ -1,16 +1,16 @@
 import { Model, DataTypes } from 'sequelize';
 import db from '../index'; 
 
-class AuthorProducts extends Model {
+class Auction extends Model {
   static associate(models) {
-    AuthorProducts.belongsTo(models.ProfileAuthor, {
+    Auction.belongsTo(models.ProfileAuthor, {
       foreignKey: 'authorId', // Khóa ngoại liên kết với ProfileAuthor
       as: 'author', // Tên alias cho quan hệ
     });
   }
 }
 
-AuthorProducts.init({
+Auction.init({
   authorId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -21,33 +21,32 @@ AuthorProducts.init({
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
   },
-  email: {
+  gifUrl: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  productname: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.STRING,
-  },
-  price: {
+  startingPrice: {
     type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  currentPrice: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    defaultValue: 0.0,
+  },
+  auctionEndTime: {
+    type: DataTypes.DATE,
     allowNull: false,
   },
   status: {
     type: DataTypes.STRING,
     allowNull: false,
-  },
-  image: {
-    type: DataTypes.STRING,
-    allowNull: false,
+    defaultValue: 'active', 
   },
 }, {
   sequelize: db.sequelize,
-  modelName: 'AuthorProducts',
-  tableName: 'AuthorProducts', // Tên bảng trong cơ sở dữ liệu
+  modelName: 'Auction',
+  tableName: 'Auction', 
 });
 
-export default AuthorProducts;
+export default Auction;
