@@ -12,28 +12,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Xử lý tạo sản phẩm
 export const processProduct = async (req, res) => {
   try {
-    const { email, productname, description, price, status, auctionId } = req.body;
+    const { email, productname, description, price, status, authorId } = req.body; // Add authorId here
     const imageFile = req.file;
 
-    // Kiểm tra dữ liệu đầu vào
+   
     if (!imageFile) {
       return res.status(400).json({ message: 'Photos are required' });
     }
-    if (!auctionId || !productname) {
-      return res.status(400).json({ message: 'Auction ID and Product name cannot be null' });
+    if (!productname || !authorId) { 
+      return res.status(400).json({ message: 'Product name and Author ID cannot be null' });
     }
 
-    // Tải hình ảnh lên Cloudinary
+   
     const result = await cloudinary.v2.uploader.upload(imageFile.path);
     const imageUrl = result.secure_url;
 
-    // Tạo sản phẩm mới
+   
     const newProduct = await AuthorProducts.create({
       email,
-      auctionId,
+      authorId, 
       productname, 
       description,
       price,
