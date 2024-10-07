@@ -10,8 +10,8 @@ import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
 import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
 import { deleteProduct, editProduct, processProduct, getProduct , getImage , createAuction , createAuctionProduct , getAuctionDetails } from '../controllers/author/productController.js';
 import { getUserStats , getUserDetails, getAuthorProduct } from '../controllers/admin/adminController.js';
-
-
+import { mintToken  } from "../controllers/smartcontract/mintController.js";
+import { transferToken } from "../controllers/smartcontract/transferController.js";
 
 const router = express.Router();
 
@@ -46,8 +46,8 @@ const initWebRoutes = (app) => {
     router.get('/api/admin/details', getUserDetails);
     router.get('/api/admin/products', getAuthorProduct);
     
-    
-
+    router.post('/api/mint', mintToken );
+    router.post('/api/transfer', transferToken);
     router.get('/', (req, res) => {
         res.send('Welcome to the API');
     });
