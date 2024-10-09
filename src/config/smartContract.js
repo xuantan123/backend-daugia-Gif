@@ -9,6 +9,6 @@ const privateKey = '691f5a293f856afea2985edae6eef8193e35cdcb87dd3eaa2cb0b61e6a3e
 const wallet = new ethers.Wallet(privateKey, provider); // Kết nối ví với provider
 
 // Khởi tạo contract với signer để ký giao dịch
-const auctionContract = new ethers.Contract('0xe5FeA5112950D8512a8078c2dBC8F10ffA53995e', auctionABI, wallet);
+const auctionContract = new ethers.Contract('0x0a69ea50F1D0bCfb7f287Dbd1cB7e789df249674', auctionABI, wallet);
 
 module.exports = auctionContract;

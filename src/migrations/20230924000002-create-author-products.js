@@ -51,6 +51,10 @@ module.exports = {
         allowNull: false,
         defaultValue: true,
       },
+      txHash: { // Thêm trường txHash
+        type: Sequelize.STRING,
+        allowNull: true, // Cho phép null nếu không có giao dịch
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

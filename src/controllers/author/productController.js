@@ -1,4 +1,4 @@
-import AuthorProducts from '../../models/author/ProductsAuthor';
+import AuctionItem from '../../models/author/ProductsAuthor';
 import cloudinary from 'cloudinary';
 import path from 'path';
 import fs from 'fs';
@@ -28,7 +28,7 @@ export const processProduct = async (req, res) => {
     const imageUrl = result.secure_url;
 
    
-    const newProduct = await AuthorProducts.create({
+    const newProduct = await AuctionItem.create({
       email,
       authorId, 
       productname, 
@@ -100,7 +100,7 @@ export const getProduct = async (req, res) => {
       return res.status(400).json({ message: 'Email cannot be blank' });
     }
 
-    const products = await AuthorProducts.findAll({ where: { email } });
+    const products = await AuctionItem.findAll({ where: { email } });
 
     if (products.length > 0) {
       res.status(200).json({
@@ -129,7 +129,7 @@ export const deleteProduct = async (req, res) => {
       return res.status(400).json({ message: 'ID cannot be empty' });
     }
 
-    const product = await AuthorProducts.findByPk(id);
+    const product = await AuctionItem.findByPk(id);
 
     if (product) {
       await product.destroy();
@@ -156,7 +156,7 @@ export const editProduct = async (req, res) => {
       return res.status(400).json({ message: 'ID cannot be empty' });
     }
 
-    const product = await AuthorProducts.findByPk(id);
+    const product = await AuctionItem.findByPk(id);
 
     if (product) {
       product.productname = productname || product.productname;

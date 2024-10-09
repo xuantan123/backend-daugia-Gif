@@ -53,6 +53,10 @@ AuctionItem.init({
     allowNull: false,
     defaultValue: true, // Mặc định là còn hoạt động
   },
+  txHash: {
+    type: DataTypes.STRING, // Thêm trường txHash
+    allowNull: true, // Cho phép null nếu không có giao dịch
+  },
 }, {
   sequelize: db.sequelize,
   modelName: 'AuctionItem',

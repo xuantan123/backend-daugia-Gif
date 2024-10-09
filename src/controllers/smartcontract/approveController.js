@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import contractABI from "../../config/contract.json";
 
 const approveToken = async (req, res) => {
-    const spender = "0xe5FeA5112950D8512a8078c2dBC8F10ffA53995e"; // Thay đổi địa chỉ này thành địa chỉ smart contract của bạn
+    const spender = "0x0a69ea50F1D0bCfb7f287Dbd1cB7e789df249674"; // Thay đổi địa chỉ này thành địa chỉ smart contract của bạn
     const amount  = "2000000"; 
 
     // Kiểm tra số lượng
