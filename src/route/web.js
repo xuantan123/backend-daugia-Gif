@@ -8,10 +8,12 @@ import { handleLoginAuthor } from '../controllers/author/signinauthorController.
 import { handleProfileAuthor, handleEditProfileAuthor } from '../controllers/author/profileauthorController.js';
 import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
 import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
-import { deleteProduct, editProduct, processProduct, getProduct , getImage , createAuction , createAuctionProduct , getAuctionDetails } from '../controllers/author/productController.js';
+import { deleteProduct, editProduct, processProduct, getProduct , getImage } from '../controllers/author/productController.js';
 import { getUserStats , getUserDetails, getAuthorProduct } from '../controllers/admin/adminController.js';
 import { mintToken  } from "../controllers/smartcontract/mintController.js";
 import { transferToken } from "../controllers/smartcontract/transferController.js";
+import { createAuction , bidAuction , endAuction , getAuctionDetails } from "../controllers/smartcontract/auctionProduct.js";
+
 
 const router = express.Router();
 
@@ -37,10 +39,6 @@ const initWebRoutes = (app) => {
     router.put('/api/products/:id', upload.single('image'), editProduct);
     router.delete('/api/products/:id', deleteProduct);
     
-    router.post('/api/auctions', createAuction);
-    router.post('/api/auctions/:auctionId/products', createAuctionProduct);
-    router.get('/api/auctions/:id', getAuctionDetails);
-
     
     router.get('/api/admin/stats', getUserStats);
     router.get('/api/admin/details', getUserDetails);
@@ -48,6 +46,14 @@ const initWebRoutes = (app) => {
     
     router.post('/api/mint', mintToken );
     router.post('/api/transfer', transferToken);
+    
+
+    router.post('/api/create', createAuction);
+    router.post('/api/bid', bidAuction);
+    router.post('/api/end', endAuction);
+    router.get('/api/:auctionId', getAuctionDetails);
+
+
     router.get('/', (req, res) => {
         res.send('Welcome to the API');
     });

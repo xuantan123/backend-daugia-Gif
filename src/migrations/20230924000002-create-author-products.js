@@ -1,59 +1,68 @@
 'use strict';
+
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('AuthorProducts', {
+    await queryInterface.createTable('AuctionItems', {
       id: {
-        allowNull: false,
+        type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER,
+        allowNull: false,
       },
-      authorId: { // ID của tác giả
+      authorId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'ProfileAuthor', // Liên kết với bảng Authors
+          model: 'ProfileAuthor', // Đảm bảo rằng tên bảng này đúng
           key: 'id',
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      email: { // Email của tác giả
+      productName: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      productname: { // Tên sản phẩm GIF
+      description: {
+        type: Sequelize.STRING,
+      },
+      imageUrl: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      description: { // Mô tả sản phẩm
-        type: Sequelize.STRING,
-      },
-      price: { // Giá của sản phẩm
+      startingPrice: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      status: { // Trạng thái của sản phẩm
+      highestBid: {
+        type: Sequelize.FLOAT,
+        defaultValue: 0,
+      },
+      highestBidder: {
         type: Sequelize.STRING,
+        allowNull: true,
+      },
+      endTime: {
+        type: Sequelize.DATE,
         allowNull: false,
       },
-      image: { // Đường dẫn hình ảnh hoặc GIF
-        type: Sequelize.STRING,
+      active: {
+        type: Sequelize.BOOLEAN,
         allowNull: false,
+        defaultValue: true,
       },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
-      }
+      },
     });
   },
+
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('AuthorProducts');
+    await queryInterface.dropTable('AuctionItems');
   }
 };

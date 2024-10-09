@@ -1,10 +1,8 @@
-import Auction from '../../models/author/Auction';
 import AuthorProducts from '../../models/author/ProductsAuthor';
-import ProfileAuthor from '../../models/author/ProfileAuthor'; // Import ProfileAuthor
 import cloudinary from 'cloudinary';
 import path from 'path';
-import crypto from 'crypto';
 import fs from 'fs';
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
@@ -188,106 +186,3 @@ export const editProduct = async (req, res) => {
   }
 };
 
-// Tạo phiên đấu giá
-export const createAuction = async (req, res) => {
-  try {
-    const { authorId, gifUrl, startingPrice, auctionEndTime } = req.body;
-
-    // Kiểm tra các trường bắt buộc
-    if (!gifUrl || !startingPrice || !auctionEndTime) {
-      return res.status(400).json({
-        message: 'gifUrl, startingPrice, and auctionEndTime are required'
-      });
-    }
-
-    const newAuction = await Auction.create({
-      authorId,
-      gifUrl,
-      startingPrice: parseFloat(startingPrice),
-      currentPrice: parseFloat(startingPrice),
-      auctionEndTime,
-      status: 'active',
-    });
-
-    res.status(201).json({
-      message: 'Auction created successfully',
-      auction: newAuction,
-    });
-  } catch (error) {
-    console.error('Error creating auction:', error);
-    res.status(500).json({
-      message: 'Error creating auction',
-      error: error.message,
-    });
-  }
-};
-
-// Lấy danh sách phiên đấu giá
-export const getAuctions = async (req, res) => {
-  try {
-    const auctions = await Auction.findAll();
-
-    res.status(200).json({
-      message: 'Retrieved auctions successfully',
-      auctions,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error retrieving auctions',
-      error: error.message,
-    });
-  }
-};
-
-// Thêm sản phẩm vào phiên đấu giá
-export const createAuctionProduct = async (req, res) => {
-  try {
-    const { auctionId, userId, productname, description, gifUrl } = req.body;
-
-    if (!auctionId || !userId || !productname) {
-      return res.status(400).json({ message: 'Auction ID, User ID, and Product name cannot be null' });
-    }
-
-    const newProduct = await AuthorProducts.create({
-      auctionId,
-      userId,
-      productname,
-      description,
-      image: gifUrl, // Sử dụng GIF URL làm hình ảnh
-    });
-
-    res.status(201).json({
-      message: 'Auction product created successfully',
-      product: newProduct,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error creating auction product',
-      error: error.message,
-    });
-  }
-};
-
-// Lấy thông tin chi tiết một phiên đấu giá
-export const getAuctionDetails = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const auction = await Auction.findByPk(id, {
-      include: [{ model: AuthorProducts }], // Lấy sản phẩm liên quan đến phiên đấu giá
-    });
-
-    if (!auction) {
-      return res.status(404).json({ message: 'Auction not found' });
-    }
-
-    res.status(200).json({
-      message: 'Retrieved auction details successfully',
-      auction,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error retrieving auction details',
-      error: error.message,
-    });
-  }
-};
