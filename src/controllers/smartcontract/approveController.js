@@ -2,10 +2,9 @@ import { ethers } from "ethers";
 import contractABI from "../../config/contract.json";
 
 const approveToken = async (req, res) => {
-    const spender = "0x0a69ea50F1D0bCfb7f287Dbd1cB7e789df249674"; // Thay đổi địa chỉ này thành địa chỉ smart contract của bạn
-    const amount  = "2000000"; 
+    const spender = "0xA9aEd670736770a77d1857f42dC354fE3bD78A87";
+    const amount = "20000"; 
 
-    // Kiểm tra số lượng
     if (!amount || isNaN(amount) || amount <= 0) {
         return res.status(400).json({ message: "Số lượng phải là một số dương" });
     }
@@ -14,24 +13,47 @@ const approveToken = async (req, res) => {
         const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
         const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
-        const contractAddress = process.env.CONTRACT_ADDRESS; 
+        const contractAddress = process.env.CONTRACT_ADDRESS;
         const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
         const parsedAmount = ethers.parseUnits(amount.toString(), 18);
 
-        // Phê duyệt cho spender
         const tx = await contract.approve(spender, parsedAmount, {
             gasLimit: 100000,
             gasPrice: ethers.parseUnits('20', 'gwei')
         });
 
-        await tx.wait();
+        const receipt = await tx.wait();
+        const approvalEvent = receipt.events?.filter((x) => x.event === "Approval");
 
-        res.status(200).json({ message: "Phê duyệt thành công!", tx });
+        if (approvalEvent && approvalEvent.length > 0) {
+            res.status(200).json({ message: "Phê duyệt thành công!", approvalEvent });
+        } else {
+            res.status(500).json({ message: "Không tìm thấy sự kiện Approval" });
+        }
     } catch (error) {
         console.error("Lỗi:", error);
         res.status(500).json({ message: "Có lỗi xảy ra", error: error.message });
     }
 };
 
-export { approveToken };
+const checkAllowance = async (req, res) => {
+    try {
+        const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+        const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+
+        const contractAddress = process.env.CONTRACT_ADDRESS;
+        const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+
+        const spender = "0xA9aEd670736770a77d1857f42dC354fE3bD78A87";
+
+        const allowance = await contract.allowance(wallet.address, spender);
+
+        res.status(200).json({ allowance: ethers.formatUnits(allowance, 18) });
+    } catch (error) {
+        console.error("Lỗi:", error);
+        res.status(500).json({ message: "Có lỗi xảy ra", error: error.message });
+    }
+};
+
+export { approveToken, checkAllowance };
