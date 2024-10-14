@@ -146,31 +146,33 @@ export const getImage = (req, res) => {
         });
     }
 };
-
-// Lấy sản phẩm của người dùng theo email
-export const getProduct = async (req, res) => {
+// Lấy thông tin sản phẩm theo authorId
+export const getProductsByAuthorId = async (req, res) => {
     try {
-        const { email } = req.params;
+        const { authorId } = req.params;
 
-        if (!email) {
-            return res.status(400).json({ message: 'Email cannot be blank' });
+        if (!authorId) {
+            return res.status(400).json({ message: 'Author ID cannot be blank' });
         }
 
-        const products = await AuctionItem.findAll({ where: { email } });
+        // Tìm tất cả sản phẩm theo authorId
+        const products = await AuctionItem.findAll({
+            where: { authorId }
+        });
 
         if (products.length > 0) {
             res.status(200).json({
                 errorCode: 0,
-                message: 'Get the product successfully',
+                message: 'Get products successfully',
                 products,
             });
         } else {
-            res.status(404).json({ message: 'Product not found' });
+            res.status(404).json({ message: 'No products found for this author ID' });
         }
     } catch (error) {
         res.status(500).json({
             errorCode: 3,
-            message: 'Error when retrieving product',
+            message: 'Error when retrieving products',
             error: error.message,
         });
     }
@@ -205,7 +207,7 @@ export const deleteProduct = async (req, res) => {
 export const editProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { productname, description, price, status } = req.body;
+        const { productname, description, startingPrice, active } = req.body;
         const imageFile = req.file;
 
         if (!id) {
@@ -217,8 +219,8 @@ export const editProduct = async (req, res) => {
         if (product) {
             product.productName = productname || product.productName;
             product.description = description || product.description;
-            product.price = price || product.price;
-            product.status = status || product.status;
+            product.startingPrice = startingPrice || product.startingPrice;
+            product.active = active !== undefined ? active : product.active; // Cập nhật trạng thái active
 
             if (imageFile) {
                 const imageUrl = await uploadImage(imageFile);
@@ -242,12 +244,12 @@ export const editProduct = async (req, res) => {
     }
 };
 
-
-// auctionController.js
+// Đặt giá thầu cho sản phẩm
 export const bidAuctionItem = async (req, res) => {
     try {
-        console.log("body: " , req.body);
+        console.log("body: ", req.body);
         const { auctionId, amount } = req.body;
+
         // Kiểm tra các trường không được để trống
         if (!auctionId || !amount) {
             return res.status(400).json({
@@ -282,4 +284,4 @@ export const bidAuctionItem = async (req, res) => {
             error: error.message,
         });
     }
-};
+}; 

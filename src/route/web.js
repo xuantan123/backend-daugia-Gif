@@ -12,7 +12,7 @@ import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js
 import { mintToken  } from "../controllers/smartcontract/mintController.js";
 import { transferToken } from "../controllers/smartcontract/transferController.js";
 import { approveToken , checkAllowance } from "../controllers/smartcontract/approveController.js";
-import { createAuctionItem , getProduct , deleteProduct , editProduct } from "../controllers/author/auctionProduct.js";
+import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , bidAuctionItem} from "../controllers/author/auctionProduct.js";
 
 const router = express.Router();
 
@@ -41,9 +41,10 @@ const initWebRoutes = (app) => {
     
 
     router.post('/api/create',upload.single('image'), createAuctionItem);
-    router.get('/api/product/:email', getProduct);
+    router.get('/api/products/author/:authorId', getProductsByAuthorId);
     router.delete('/api/delete/:id', deleteProduct);
     router.put('/api/edit/:id', editProduct);
+    router.post('/api/bid', bidAuctionItem);
 
 
     router.get('/', (req, res) => {
