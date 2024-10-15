@@ -3,6 +3,7 @@ import AuctionItem from "../../models/author/AuctionAuthor";
 import cloudinary from "cloudinary";
 import path from 'path';
 import fs from 'fs';
+import { ethers } from 'ethers';
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -28,7 +29,6 @@ export const createAuctionItem = async (req, res) => {
             startingPrice,
             durationInMinutes,
             authorId,
-            active = true,
         } = req.body;
 
         const imageFile = req.file;
@@ -49,7 +49,7 @@ export const createAuctionItem = async (req, res) => {
 
         // Chuyển đổi durationInMinutes thành số giây
         const durationInSeconds = parseInt(durationInMinutes, 10) * 60; // Chuyển đổi phút sang giây
-        const isActive = endTime > new Date(); 
+        
         // Kiểm tra thời gian đấu giá
         if (isNaN(durationInSeconds) || durationInSeconds <= 0) {
             return res.status(400).json({
@@ -70,7 +70,8 @@ export const createAuctionItem = async (req, res) => {
         }
 
         // Tính thời gian kết thúc
-        const endTime = new Date(Date.now() + durationInSeconds * 1000); // Thời gian kết thúc
+        const endTimeInSeconds = Math.floor(Date.now() / 1000) + durationInSeconds;
+        console.log("End Time (in seconds):", endTimeInSeconds); // Để kiểm tra giá trị
 
         // Tạo cuộc đấu giá
         const tx = await auctionContract.createAuction(productname, description, imageUrl, startingPrice, durationInSeconds);
@@ -86,8 +87,8 @@ export const createAuctionItem = async (req, res) => {
             startingPrice,
             highestBid: 0,
             highestBidder: null,
-            endTime: endTime, // Lưu thời gian kết thúc dưới dạng Date
-            active: isActive,
+            endTime: endTimeInSeconds, // Lưu thời gian kết thúc dưới dạng số giây
+            active: true, // Khởi tạo trạng thái active là true
             imageUrl,
             txHash, 
         });
@@ -103,6 +104,38 @@ export const createAuctionItem = async (req, res) => {
         res.status(500).json({
             errorCode: 3,
             message: 'Auction item creation failed',
+            error: error.message,
+        });
+    }
+};
+
+export const checkAuctionStatus = async (req, res) => {
+    try {
+        const currentTime = Math.floor(Date.now() / 1000);
+        const auctionItems = await AuctionItem.findAll();
+
+        // Cập nhật trạng thái active và lưu vào cơ sở dữ liệu
+        const updates = auctionItems.map(async (auction) => {
+            const isActive = auction.endTime > currentTime; // Kiểm tra trạng thái active
+            auction.active = isActive; // Cập nhật trạng thái trong đối tượng
+            
+            // Cập nhật vào cơ sở dữ liệu
+            await AuctionItem.update(
+                { active: isActive }, // Giá trị mới
+                { where: { id: auction.id } } // Điều kiện để tìm bản ghi cần cập nhật
+            );
+        });
+
+        // Đợi tất cả các cập nhật hoàn thành
+        await Promise.all(updates);
+
+        // Gửi phản hồi với danh sách các đấu giá đã cập nhật
+        res.status(200).json(auctionItems);
+    } catch (error) {
+        console.error('Error checking auction status:', error);
+        res.status(500).json({
+            errorCode: 3,
+            message: 'Failed to check auction status',
             error: error.message,
         });
     }
@@ -244,44 +277,4 @@ export const editProduct = async (req, res) => {
     }
 };
 
-// Đặt giá thầu cho sản phẩm
-export const bidAuctionItem = async (req, res) => {
-    try {
-        console.log("body: ", req.body);
-        const { auctionId, amount } = req.body;
 
-        // Kiểm tra các trường không được để trống
-        if (!auctionId || !amount) {
-            return res.status(400).json({
-                message: 'Auction ID and amount cannot be null'
-            });
-        }
-
-        // Kiểm tra giá đấu
-        if (isNaN(amount) || amount <= 0) {
-            return res.status(400).json({
-                message: 'Amount must be a positive number'
-            });
-        }
-
-        // Gọi hàm đấu giá từ smart contract
-        const tx = await auctionContract.bid(auctionId, amount);
-        const txHash = tx.hash; // Lưu txHash
-
-        // Chờ cho giao dịch hoàn tất
-        await tx.wait();
-
-        res.status(200).json({
-            errorCode: 0,
-            message: 'Bid successful',
-            txHash, 
-        });
-    } catch (error) {
-        console.error('Error when bidding auction item:', error);
-        res.status(500).json({
-            errorCode: 3,
-            message: 'Bid failed',
-            error: error.message,
-        });
-    }
-}; 

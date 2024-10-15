@@ -23,7 +23,7 @@ module.exports = {
         allowNull: false,
       },
       endTime: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.BIGINT,
         allowNull: false,
       },
       active: {

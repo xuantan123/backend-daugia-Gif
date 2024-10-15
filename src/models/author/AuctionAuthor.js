@@ -40,7 +40,7 @@ Auction.init({
     allowNull: false,
   },
   endTime: {
-    type: DataTypes.DATE, // Kiểu dữ liệu phù hợp với smart contract
+    type: DataTypes.BIGINT, // Kiểu dữ liệu phù hợp với smart contract
     allowNull: false,
   },
   active: {
