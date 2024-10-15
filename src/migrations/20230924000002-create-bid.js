@@ -1,5 +1,3 @@
-// migrations/[timestamp]-create-bids.js
-
 'use strict';
 
 module.exports = {
@@ -18,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Auctions', // tên bảng phải trùng khớp
+          model: 'Auctions', 
           key: 'id',
         },
         onDelete: 'CASCADE',
@@ -27,7 +25,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'ProfileUser', // tên bảng phải trùng khớp
+          model: 'ProfileUser', 
           key: 'id',
         },
         onDelete: 'CASCADE',

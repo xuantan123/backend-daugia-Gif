@@ -51,7 +51,7 @@ Auction.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'ProfileUser', // Tên bảng
+      model: 'ProfileAuthor', // Tên bảng
       key: 'id',
     },
   },

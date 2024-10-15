@@ -33,6 +33,11 @@ module.exports = {
       authorId: {
         type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: 'ProfileAuthor', 
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
       },
       txHash: {
         type: Sequelize.STRING,

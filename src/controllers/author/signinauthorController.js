@@ -6,7 +6,7 @@ export const handleLoginAuthor = async (req, res) => {
     if (!email || !password) {
         return res.status(400).json({
             errorCode: 1,
-            message: 'Missing inputs parameter!'
+            message: 'Thiếu thông tin đầu vào!'
         });
     }
 
@@ -15,13 +15,16 @@ export const handleLoginAuthor = async (req, res) => {
         return res.status(200).json({
             errorCode: userData.errorCode,
             message: userData.message,
-            user: userData.user || {}
+            user: {
+                id: userData.user?.id || null,  // Trả về id nếu có
+                ...userData.user                 // Trả về toàn bộ thông tin user
+            }
         });
     } catch (error) {
-        console.error('Error during login:', error);
+        console.error('Lỗi trong quá trình đăng nhập:', error);
         return res.status(500).json({
             errorCode: 2,
-            message: 'Error during sign in'
+            message: 'Lỗi trong quá trình đăng nhập'
         });
     }
 };

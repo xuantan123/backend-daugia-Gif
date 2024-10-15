@@ -49,7 +49,7 @@ export const createAuctionItem = async (req, res) => {
 
         // Chuyển đổi durationInMinutes thành số giây
         const durationInSeconds = parseInt(durationInMinutes, 10) * 60; // Chuyển đổi phút sang giây
-
+        const isActive = endTime > new Date(); 
         // Kiểm tra thời gian đấu giá
         if (isNaN(durationInSeconds) || durationInSeconds <= 0) {
             return res.status(400).json({
@@ -87,7 +87,7 @@ export const createAuctionItem = async (req, res) => {
             highestBid: 0,
             highestBidder: null,
             endTime: endTime, // Lưu thời gian kết thúc dưới dạng Date
-            active,
+            active: isActive,
             imageUrl,
             txHash, 
         });
