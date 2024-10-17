@@ -2,6 +2,7 @@ const { ethers } = require('ethers');
 const { allowanceToken } = require('../../controllers/smartcontract/approveController'); // Nhập hàm allowanceToken
 import abiBid from "../../config/contractBid.json"; // Thay thế bằng ABI của smart contract bạn
 import abi from "../../config/contract.json";
+import Bid from "../../models/author/BidAuthor";
 
 // Cấu hình provider và contract
 const contractAddress = process.env.CONTRACT_ADDRESS;
@@ -13,10 +14,11 @@ const auctionContract = new ethers.Contract(contractAddressBid, abiBid, wallet);
 const tokenContract = new ethers.Contract(contractAddress, abi, wallet); // Kết nối với contract token
 
 // Hàm thực hiện đặt giá thầu (bid)
-const placeBid = async (req, res) => {
-    const { auctionId, bidAmount } = req.body;
+export const placeBid = async (req, res) => {
+    const { auctionId, bidAmount, bidderId } = req.body;
+   
 
-    if (!auctionId || !bidAmount) {
+    if (!auctionId || !bidAmount || !bidderId) {
         return res.status(400).send('Thiếu thông tin auctionId hoặc bidAmount');
     }
 
@@ -34,6 +36,7 @@ const placeBid = async (req, res) => {
             return res.status(400).send('Allowance không đủ để thực hiện bid.');
         }
 
+        // Thực hiện giao dịch bid
         const tx = await auctionContract.bid(auctionId, amountInUnits);
         const receipt = await tx.wait();
 
@@ -44,9 +47,18 @@ const placeBid = async (req, res) => {
             });
         }
 
+        // Lưu thông tin vào MySQL
+        const newBid = await Bid.create({
+            amount: bidAmount, // Số lượng giá thầu
+            auctionId: auctionId, // ID của cuộc đấu giá
+            bidderId: bidderId, // ID của người đặt giá thầu
+            txHash: tx.hash, // Hash giao dịch
+        });
+
         return res.status(200).send({
             message: 'Đặt giá thầu thành công',
             txHash: tx.hash,
+            bidId: newBid.id // Trả về ID của bid mới tạo
         });
 
     } catch (error) {
@@ -56,9 +68,4 @@ const placeBid = async (req, res) => {
             error: error.message
         });
     }
-};
-
-// Xuất module
-module.exports = {
-    placeBid,
 };

@@ -43,6 +43,10 @@ Bid.init({
       key: 'id',
     },
   },
+  txHash: {
+    type: DataTypes.STRING,
+    allowNull: false, // Hoặc true nếu bạn muốn cho phép NULL
+},
 }, {
   sequelize: db.sequelize,
   modelName: 'Bid',
