@@ -268,14 +268,19 @@ export const editProduct = async (req, res) => {
             await product.save();
 
             res.status(200).json({
+                errorCode: 0,
                 message: 'Product update successful',
                 product,
             });
         } else {
-            res.status(404).json({ message: 'Product not found' });
+            res.status(404).json({ 
+                errorCode: 1,
+                message: 'Product not found' 
+            });
         }
     } catch (error) {
         res.status(500).json({
+            errorCode: 3,
             message: 'Product update failed',
             error: error.message,
         });
