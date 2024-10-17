@@ -11,9 +11,9 @@ import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
 import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
 import { mintToken  } from "../controllers/smartcontract/mintController.js";
 import { transferToken } from "../controllers/smartcontract/transferController.js";
-import { approveToken , checkAllowance } from "../controllers/smartcontract/approveController.js";
-import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , checkAuctionStatus } from "../controllers/author/auctionProduct.js";
-import { placeBid } from "../controllers/smartcontract/bidController.js";
+import { approveToken , allowanceToken  } from "../controllers/smartcontract/approveController.js";
+import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , checkAuctionStatus  } from "../controllers/author/auctionProduct.js";
+import { placeBid } from '../controllers/smartcontract/bidController.js';
 
 const router = express.Router();
 
@@ -37,8 +37,8 @@ const initWebRoutes = (app) => {
     
     router.post('/api/mint', mintToken );
     router.post('/api/transfer', transferToken);
-    router.post('/api/aprrove',approveToken);
-    router.get('/api/allowance',checkAllowance);
+    router.post('/api/approve',approveToken);
+    router.post('/api/allowance', allowanceToken);
     
 
     router.post('/api/create',upload.single('image'), createAuctionItem);

@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { ethers } from 'ethers';
 
+// Cấu hình Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -20,6 +21,8 @@ const uploadImage = async (imageFile) => {
     const result = await cloudinary.v2.uploader.upload(imageFile.path);
     return result.secure_url;
 };
+
+// Tạo cuộc đấu giá
 export const createAuctionItem = async (req, res) => {
     try {
         const {
@@ -71,7 +74,6 @@ export const createAuctionItem = async (req, res) => {
 
         // Tính thời gian kết thúc
         const endTimeInSeconds = Math.floor(Date.now() / 1000) + durationInSeconds;
-        console.log("End Time (in seconds):", endTimeInSeconds); // Để kiểm tra giá trị
 
         // Tạo cuộc đấu giá
         const tx = await auctionContract.createAuction(productname, description, imageUrl, startingPrice, durationInSeconds);
@@ -109,28 +111,31 @@ export const createAuctionItem = async (req, res) => {
     }
 };
 
+// Kiểm tra trạng thái cuộc đấu giá
 export const checkAuctionStatus = async (req, res) => {
     try {
         const currentTime = Math.floor(Date.now() / 1000);
         const auctionItems = await AuctionItem.findAll();
 
-        // Cập nhật trạng thái active và lưu vào cơ sở dữ liệu
+        // Tạo danh sách các cập nhật để kiểm tra trạng thái
         const updates = auctionItems.map(async (auction) => {
             const isActive = auction.endTime > currentTime; // Kiểm tra trạng thái active
-            auction.active = isActive; // Cập nhật trạng thái trong đối tượng
             
             // Cập nhật vào cơ sở dữ liệu
             await AuctionItem.update(
                 { active: isActive }, // Giá trị mới
                 { where: { id: auction.id } } // Điều kiện để tìm bản ghi cần cập nhật
             );
+
+            // Trả về bản ghi đã cập nhật
+            return { ...auction.toJSON(), active: isActive }; // Chuyển đổi đối tượng thành JSON và thêm trạng thái active
         });
 
         // Đợi tất cả các cập nhật hoàn thành
-        await Promise.all(updates);
+        const updatedAuctionItems = await Promise.all(updates);
 
         // Gửi phản hồi với danh sách các đấu giá đã cập nhật
-        res.status(200).json(auctionItems);
+        res.status(200).json(updatedAuctionItems);
     } catch (error) {
         console.error('Error checking auction status:', error);
         res.status(500).json({
@@ -140,7 +145,6 @@ export const checkAuctionStatus = async (req, res) => {
         });
     }
 };
-
 
 // Lấy hình ảnh
 export const getImage = (req, res) => {
@@ -179,6 +183,7 @@ export const getImage = (req, res) => {
         });
     }
 };
+
 // Lấy thông tin sản phẩm theo authorId
 export const getProductsByAuthorId = async (req, res) => {
     try {
@@ -276,5 +281,3 @@ export const editProduct = async (req, res) => {
         });
     }
 };
-
-

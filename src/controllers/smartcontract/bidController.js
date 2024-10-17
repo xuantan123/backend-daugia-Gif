@@ -1,74 +1,64 @@
-import { ethers } from 'ethers';
-import AuctionContract from '../../config/contractBid.json'; 
-import Auction from '../../models/author/AuctionAuthor'; 
-import User from "../../models/user/ProfileUser";
-import Bid from "../../models/author/BidAuthor";
+const { ethers } = require('ethers');
+const { allowanceToken } = require('../../controllers/smartcontract/approveController'); // Nhập hàm allowanceToken
+import abiBid from "../../config/contractBid.json"; // Thay thế bằng ABI của smart contract bạn
+import abi from "../../config/contract.json";
 
-const tokenAddress = "0x4205851C3Dc765e79D82133B0718a22919B21a97"; 
-const auctionAddress = "0xDa800Dca7859aA51A9FC6B4150A8b7Bc5B977994"; 
-
-// Kết nối với provider
-const provider = new ethers.JsonRpcProvider('https://holesky.infura.io/v3/8b9e0d5e94a24e7a9ae6be3f972dd9ef');
-
-// Tạo wallet từ private key
-const privateKey = process.env.PRIVATE_KEY; // Thay thế bằng private key của bạn
+// Cấu hình provider và contract
+const contractAddress = process.env.CONTRACT_ADDRESS;
+const contractAddressBid = process.env.ContractAuction;
+const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+const privateKey = process.env.PRIVATE_KEY;
 const wallet = new ethers.Wallet(privateKey, provider);
+const auctionContract = new ethers.Contract(contractAddressBid, abiBid, wallet); // Kết nối với contract bid
+const tokenContract = new ethers.Contract(contractAddress, abi, wallet); // Kết nối với contract token
 
-// Tạo một hợp đồng Auction
-const auctionContract = new ethers.Contract(auctionAddress, AuctionContract, wallet); // Đảm bảo sử dụng AuctionContract.abi
+// Hàm thực hiện đặt giá thầu (bid)
+const placeBid = async (req, res) => {
+    const { auctionId, bidAmount } = req.body;
 
-// Đặt giá
-export const placeBid = async (req, res) => {
-    try {
-        const { auctionId, amount, bidderId } = req.body;
-
-        // Kiểm tra xem auction có tồn tại không
-        const auction = await Auction.findOne({ where: { id: auctionId } });
-        if (!auction) {
-            return res.status(404).json({ error: 'Auction not found' });
-        }
-
-        // Kiểm tra xem bidder có tồn tại không
-        const bidder = await User.findOne({ where: { id: bidderId } });
-        if (!bidder) {
-            return res.status(404).json({ error: 'Bidder not found' });
-        }
-
-        // Kiểm tra xem giá thầu có hợp lệ không
-        if (amount <= auction.currentBid) {
-            return res.status(400).json({ error: 'Bid amount must be greater than the current bid.' });
-        }
-
-        // Chuyển đổi giá thầu sang wei
-        const parsedAmount = ethers.parseEther(amount.toString());
-
-        // Gửi giao dịch đến hợp đồng để đặt giá thầu
-        const txResponse = await auctionContract.bid(auctionId, parsedAmount, {
-            gasLimit: 300000 // Điều chỉnh gasLimit nếu cần
-        });
-
-        // Chờ cho giao dịch được xác nhận
-        const txReceipt = await txResponse.wait();
-
-        // Thêm bid vào cơ sở dữ liệu
-        const newBid = await Bid.create({
-            auctionId: auctionId,
-            amount: amount,
-            bidderId: bidderId,
-            txHash: txReceipt.transactionHash // Lưu txHash vào cơ sở dữ liệu
-        });
-
-        // Cập nhật auction với bid mới
-        await auction.update({ currentBid: amount });
-
-        // Phản hồi thành công
-        return res.status(201).json({ 
-            message: 'Bid placed successfully', 
-            bid: newBid, 
-            txHash: txReceipt.transactionHash // Trả về txHash trong phản hồi
-        });
-    } catch (error) {
-        console.error(error); // In ra lỗi trong console để dễ theo dõi
-        return res.status(500).json({ error: 'An error occurred while placing the bid.' });
+    if (!auctionId || !bidAmount) {
+        return res.status(400).send('Thiếu thông tin auctionId hoặc bidAmount');
     }
+
+    try {
+        const amountInUnits = ethers.parseUnits(bidAmount.toString(), 18); // chuyển đổi sang wei (18 decimals)
+        const allowanceAmount = await tokenContract.allowance(wallet.address, contractAddressBid);
+        
+        const allowanceAmountBigInt = BigInt(allowanceAmount.toString());
+        const amountInUnitsBigInt = BigInt(amountInUnits.toString());
+
+        console.log('Allowance:', allowanceAmountBigInt.toString());
+        console.log('Bid Amount in Units (wei):', amountInUnitsBigInt.toString());
+
+        if (allowanceAmountBigInt < amountInUnitsBigInt) {
+            return res.status(400).send('Allowance không đủ để thực hiện bid.');
+        }
+
+        const tx = await auctionContract.bid(auctionId, amountInUnits);
+        const receipt = await tx.wait();
+
+        if (receipt.status !== 1) {
+            return res.status(500).send({
+                message: 'Đặt giá thầu thất bại',
+                txHash: tx.hash,
+            });
+        }
+
+        return res.status(200).send({
+            message: 'Đặt giá thầu thành công',
+            txHash: tx.hash,
+        });
+
+    } catch (error) {
+        console.error('Lỗi khi đặt giá thầu:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi đặt giá thầu.',
+            error: error.message
+        });
+    }
+};
+
+// Xuất module
+module.exports = {
+    placeBid,
 };
