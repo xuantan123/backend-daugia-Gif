@@ -69,3 +69,134 @@ export const placeBid = async (req, res) => {
         });
     }
 };
+export const getAuctionDetails = async (req, res) => {
+    const { auctionId } = req.params;
+
+    if (!auctionId) {
+        return res.status(400).send('Thiếu auctionId.');
+    }
+
+    try {
+        const auctionDetails = await auctionContract.getAuctionDetails(auctionId);
+
+        return res.status(200).send({
+            auctionId: auctionDetails.id.toString(), // Chuyển đổi BigInt thành chuỗi
+            productName: auctionDetails.productName,
+            description: auctionDetails.description,
+            imageUrl: auctionDetails.imageUrl,
+            startingPrice: auctionDetails.startingPrice.toString(), // Chuyển đổi BigInt thành chuỗi
+            endTime: auctionDetails.endTime.toString(), // Chuyển đổi BigInt thành chuỗi
+            active: auctionDetails.active,
+            author: auctionDetails.author,
+        });
+    } catch (error) {
+        console.error('Lỗi khi lấy chi tiết cuộc đấu giá:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi lấy chi tiết cuộc đấu giá.',
+            error: error.message
+        });
+    }
+};
+
+// Hàm kết thúc cuộc đấu giá
+export const endAuction = async (req, res) => {
+    const { auctionId } = req.params;
+
+    if (!auctionId) {
+        return res.status(400).send('Thiếu auctionId.');
+    }
+
+    try {
+        const tx = await auctionContract.endAuction(auctionId);
+        const receipt = await tx.wait();
+
+        if (receipt.status !== 1) {
+            return res.status(500).send('Kết thúc cuộc đấu giá thất bại.');
+        }
+
+        return res.status(200).send({
+            message: 'Kết thúc cuộc đấu giá thành công',
+            txHash: tx.hash
+        });
+    } catch (error) {
+        console.error('Lỗi khi kết thúc cuộc đấu giá:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi kết thúc cuộc đấu giá.',
+            error: error.message
+        });
+    }
+};
+
+// Hàm lấy danh sách các đặt giá cho một cuộc đấu giá
+export const getBids = async (req, res) => {
+    const { auctionId } = req.params;
+
+    if (!auctionId) {
+        return res.status(400).send('Thiếu auctionId.');
+    }
+
+    try {
+        const bids = await auctionContract.getBids(auctionId);
+
+        // Giả sử bids là một mảng chứa các đối tượng có cấu trúc như { amount, bidder }
+        const formattedBids = bids.map(bid => ({
+            amount: bid.amount.toString(), // Chuyển đổi BigInt thành chuỗi
+            bidder: bid.bidder,
+            // Thêm các thuộc tính khác nếu có
+        }));
+
+        return res.status(200).send(formattedBids);
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách giá thầu:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi lấy danh sách giá thầu.',
+            error: error.message
+        });
+    }
+};
+
+// Hàm lấy người đặt giá cao nhất
+export const getCurrentHighestBidder = async (req, res) => {
+    const { auctionId } = req.params;
+
+    if (!auctionId) {
+        return res.status(400).send('Thiếu auctionId.');
+    }
+
+    try {
+        const highestBidderAddress = await auctionContract.getCurrentHighestBidder(auctionId);
+        return res.status(200).send({
+            auctionId: auctionId,
+            highestBidder: highestBidderAddress
+        });
+    } catch (error) {
+        console.error('Lỗi khi lấy địa chỉ ví của người đặt giá cao nhất:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi lấy địa chỉ ví của người đặt giá cao nhất.',
+            error: error.message
+        });
+    }
+};
+
+// Hàm lấy giá cao nhất hiện tại
+export const getCurrentHighestBid = async (req, res) => {
+    const { auctionId } = req.params;
+
+    if (!auctionId) {
+        return res.status(400).send('Thiếu auctionId.');
+    }
+
+    try {
+        const highestBidAmount = await auctionContract.getCurrentHighestBid(auctionId);
+        return res.status(200).send({
+            auctionId: auctionId,
+            highestBid: ethers.formatUnits(highestBidAmount, 18) // Chuyển đổi từ wei về đơn vị token
+        });
+    } catch (error) {
+        console.error('Lỗi khi lấy giá cao nhất hiện tại:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi lấy giá cao nhất hiện tại.',
+            error: error.message
+        });
+    }
+};

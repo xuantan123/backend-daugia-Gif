@@ -13,7 +13,8 @@ import { mintToken  } from "../controllers/smartcontract/mintController.js";
 import { transferToken } from "../controllers/smartcontract/transferController.js";
 import { approveToken , allowanceToken  } from "../controllers/smartcontract/approveController.js";
 import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , checkAuctionStatus  } from "../controllers/author/auctionProduct.js";
-import { placeBid } from '../controllers/smartcontract/bidController.js';
+import { placeBid ,  getAuctionDetails , endAuction , getBids , getCurrentHighestBidder , getCurrentHighestBid } from '../controllers/smartcontract/bidController.js';
+
 
 const router = express.Router();
 
@@ -48,6 +49,11 @@ const initWebRoutes = (app) => {
     router.put('/api/edit/:id', editProduct);
 
     router.post('/api/bid',placeBid);
+    router.get('/api/auctions/:auctionId', getAuctionDetails);
+    router.post('/api/auctions/:auctionId/end', endAuction);
+    router.get('/api/auctions/:auctionId/bids', getBids);
+    router.get('/api/auctions/:auctionId/current-highest-bidder', getCurrentHighestBidder);
+    router.get('/api/auctions/:auctionId/current-highest-bid', getCurrentHighestBid);
 
 
     router.get('/', (req, res) => {
