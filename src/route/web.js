@@ -54,6 +54,12 @@ const initWebRoutes = (app) => {
     router.get('/api/auctions/:auctionId/bids', getBids);
     router.get('/api/auctions/:auctionId/current-highest-bidder', getCurrentHighestBidder);
     router.get('/api/auctions/:auctionId/current-highest-bid', getCurrentHighestBid);
+<<<<<<< HEAD
+=======
+
+    router.post('/api/register', registerForAuction);
+    router.get('/api/:userId/auctions', getRegisteredAuctions);
+>>>>>>> f3d78aed66da8e8a3a9a4fe4e6cac104c621b97a
 
     router.post('/api/register', registerForAuction);
     router.get('/api/:userId/auctions', getRegisteredAuctions);

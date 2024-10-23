@@ -30,6 +30,10 @@ module.exports = {
         },
         onDelete: 'CASCADE',
       },
+      txHash: {
+        type: Sequelize.STRING,
+        allowNull: true, // hoặc false nếu bạn muốn bắt buộc
+    },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
