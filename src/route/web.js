@@ -14,7 +14,7 @@ import { transferToken } from "../controllers/smartcontract/transferController.j
 import { approveToken , allowanceToken  } from "../controllers/smartcontract/approveController.js";
 import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , checkAuctionStatus  } from "../controllers/author/auctionProduct.js";
 import { placeBid ,  getAuctionDetails , endAuction , getBids , getCurrentHighestBidder , getCurrentHighestBid } from '../controllers/smartcontract/bidController.js';
-
+import { registerForAuction , getRegisteredAuctions } from "../controllers/user/registrationController.js";
 
 const router = express.Router();
 
@@ -55,6 +55,8 @@ const initWebRoutes = (app) => {
     router.get('/api/auctions/:auctionId/current-highest-bidder', getCurrentHighestBidder);
     router.get('/api/auctions/:auctionId/current-highest-bid', getCurrentHighestBid);
 
+    router.post('/api/register', registerForAuction);
+    router.get('/api/:userId/auctions', getRegisteredAuctions);
 
     router.get('/', (req, res) => {
         res.send('Welcome to the API');

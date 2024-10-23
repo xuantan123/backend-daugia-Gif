@@ -1,16 +1,21 @@
+// models/Auction.js
 import { Model, DataTypes } from 'sequelize';
-import db from '../index';
+import db from '../index.js';
+import Registration from '../user/Registration.js';
+import ProfileUser from '../user/ProfileUser.js';
 
 class Auction extends Model {
   static associate(models) {
-    // Một cuộc đấu giá có một kết quả đấu giá
+    Auction.belongsToMany(models.ProfileUser, { 
+      through: models.Registration, // Sử dụng models để đảm bảo đúng
+      foreignKey: 'auctionId', 
+      as: 'registeredUsers' 
+    });
     Auction.hasOne(models.AuctionResult, {
       foreignKey: 'auctionId',
       as: 'result',
       onDelete: 'CASCADE',
     });
-
-    // Một cuộc đấu giá có nhiều giá thầu
     Auction.hasMany(models.Bid, {
       foreignKey: 'auctionId',
       as: 'bids',
@@ -40,7 +45,7 @@ Auction.init({
     allowNull: false,
   },
   endTime: {
-    type: DataTypes.BIGINT, // Kiểu dữ liệu phù hợp với smart contract
+    type: DataTypes.BIGINT, // Phù hợp với smart contract
     allowNull: false,
   },
   active: {
@@ -51,7 +56,7 @@ Auction.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'ProfileAuthor', // Tên bảng
+      model: 'ProfileUser',
       key: 'id',
     },
   },
