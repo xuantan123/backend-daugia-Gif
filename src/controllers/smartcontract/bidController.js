@@ -4,6 +4,7 @@ import abiBid from "../../config/contractBid.json"; // Thay thế bằng ABI c�
 import abi from "../../config/contract.json";
 import Bid from "../../models/author/BidAuthor";
 
+
 // Cấu hình provider và contract
 const contractAddress = process.env.CONTRACT_ADDRESS;
 const contractAddressBid = process.env.ContractAuction;
@@ -200,3 +201,4 @@ export const getCurrentHighestBid = async (req, res) => {
         });
     }
 };
+

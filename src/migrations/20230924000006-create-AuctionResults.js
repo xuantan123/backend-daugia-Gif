@@ -1,32 +1,28 @@
+// migrations/2024xxxxxx-create-auction-result.js
 'use strict';
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('AuctionResults', {
       id: {
         type: Sequelize.INTEGER,
-        primaryKey: true,
         autoIncrement: true,
-      },
-      highestBid: {
-        type: Sequelize.DECIMAL(18, 2),
-        defaultValue: 0,
-        allowNull: false,
-      },
-      highestBidder: {
-        type: Sequelize.STRING,
+        primaryKey: true,
       },
       auctionId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         references: {
           model: 'Auctions',
           key: 'id',
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      endTime: {
-        type: Sequelize.DATE,
+      winnerAddress: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      highestBid: {
+        type: Sequelize.BIGINT,
         allowNull: false,
       },
       createdAt: {
@@ -39,7 +35,6 @@ module.exports = {
       },
     });
   },
-
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('AuctionResults');
   },

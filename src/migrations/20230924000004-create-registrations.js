@@ -1,39 +1,33 @@
+// migrations/2024xxxxxx-create-registration.js
 'use strict';
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Bids', {
+    await queryInterface.createTable('Registrations', {
       id: {
         type: Sequelize.INTEGER,
-        primaryKey: true,
         autoIncrement: true,
+        primaryKey: true,
       },
-      amount: {
-        type: Sequelize.DECIMAL(18, 2),
+      userId: {
+        type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: 'Info',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       auctionId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Auctions', 
+          model: 'Auctions',
           key: 'id',
         },
+        onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      bidderId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'ProfileUser', 
-          key: 'id',
-        },
-        onDelete: 'CASCADE',
-      },
-      txHash: {
-        type: Sequelize.STRING,
-        allowNull: true, // hoặc false nếu bạn muốn bắt buộc
-    },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -44,8 +38,7 @@ module.exports = {
       },
     });
   },
-
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Bids');
+    await queryInterface.dropTable('Registrations');
   },
 };

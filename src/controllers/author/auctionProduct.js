@@ -4,6 +4,7 @@ import cloudinary from "cloudinary";
 import path from 'path';
 import fs from 'fs';
 import { ethers } from 'ethers';
+import Info from "../../models/Login/Info";
 
 // Cấu hình Cloudinary
 cloudinary.config({
@@ -32,14 +33,15 @@ export const createAuctionItem = async (req, res) => {
             startingPrice,
             durationInMinutes,
             authorId,
+            startTime, // Thêm trường startTime
         } = req.body;
 
         const imageFile = req.file;
 
         // Kiểm tra các trường không được để trống
-        if (!productname || !authorId || !startingPrice || durationInMinutes === undefined || !description) {
+        if (!productname || !authorId || !startingPrice || durationInMinutes === undefined || !description || !startTime) {
             return res.status(400).json({
-                message: 'Product name, Author ID, starting price, duration, and description cannot be null'
+                message: 'Product name, Author ID, starting price, duration, description, and start time cannot be null'
             });
         }
 
@@ -60,6 +62,14 @@ export const createAuctionItem = async (req, res) => {
             });
         }
 
+        // Kiểm tra sự tồn tại của authorId
+        const authorExists = await Info.findByPk(authorId);
+        if (!authorExists) {
+            return res.status(400).json({
+                message: 'Author ID does not exist'
+            });
+        }
+
         // Upload hình ảnh
         let imageUrl;
         try {
@@ -72,8 +82,11 @@ export const createAuctionItem = async (req, res) => {
             });
         }
 
+        // Chuyển đổi startTime từ chuỗi sang đối tượng Date
+        const startDate = new Date(startTime); // Đảm bảo startTime được định dạng đúng (YYYY-MM-DDTHH:mm)
+
         // Tính thời gian kết thúc
-        const endTimeInSeconds = Math.floor(Date.now() / 1000) + durationInSeconds;
+        const endTimeInSeconds = Math.floor(startDate.getTime() / 1000) + durationInSeconds; // Lưu thời gian kết thúc dưới dạng số giây
 
         // Tạo cuộc đấu giá
         const tx = await auctionContract.createAuction(productname, description, imageUrl, startingPrice, durationInSeconds);
@@ -89,7 +102,8 @@ export const createAuctionItem = async (req, res) => {
             startingPrice,
             highestBid: 0,
             highestBidder: null,
-            endTime: endTimeInSeconds, // Lưu thời gian kết thúc dưới dạng số giây
+            startTime: startDate, // Lưu thời gian bắt đầu
+            endTime: endTimeInSeconds, // Lưu thời gian kết thúc
             active: true, // Khởi tạo trạng thái active là true
             imageUrl,
             txHash, 
@@ -110,6 +124,7 @@ export const createAuctionItem = async (req, res) => {
         });
     }
 };
+
 
 // Kiểm tra trạng thái cuộc đấu giá
 export const checkAuctionStatus = async (req, res) => {
@@ -145,7 +160,20 @@ export const checkAuctionStatus = async (req, res) => {
         });
     }
 };
+export const getAuction = async(req,res) => {
+   const {id} = req.params;
 
+   try{
+    const product = await AuctionItem.findOne({where:{id}});
+
+    if(!product) {
+        return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json(product);
+   }catch(error){
+    res.status(500).json({ message: 'Error fetching product details', error });
+   }
+};
 // Lấy hình ảnh
 export const getImage = (req, res) => {
     try {
@@ -245,7 +273,14 @@ export const deleteProduct = async (req, res) => {
 export const editProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { productname, description, startingPrice, active } = req.body;
+        const { 
+            productname, 
+            description, 
+            startingPrice, 
+            durationInMinutes, 
+            active,
+            startTime // Thêm trường startTime để cập nhật
+        } = req.body;
         const imageFile = req.file;
 
         if (!id) {
@@ -255,12 +290,48 @@ export const editProduct = async (req, res) => {
         const product = await AuctionItem.findByPk(id);
 
         if (product) {
+            // Cập nhật các trường sản phẩm
             product.productName = productname || product.productName;
             product.description = description || product.description;
             product.startingPrice = startingPrice || product.startingPrice;
-            product.active = active !== undefined ? active : product.active; // Cập nhật trạng thái active
+            product.active = active !== undefined ? active : product.active;
+
+            // Chuyển đổi và cập nhật startTime nếu được cung cấp
+            if (startTime) {
+                const startDate = new Date(startTime);
+                if (isNaN(startDate.getTime())) {
+                    return res.status(400).json({
+                        message: 'Invalid start time format. Please use a valid date format (YYYY-MM-DDTHH:mm:ss).'
+                    });
+                }
+                product.startTime = startDate;
+
+                // Nếu có durationInMinutes mới, tính toán và cập nhật thời gian kết thúc
+                if (durationInMinutes !== undefined) {
+                    const durationInSeconds = parseInt(durationInMinutes, 10) * 60;
+                    if (isNaN(durationInSeconds) || durationInSeconds <= 0) {
+                        return res.status(400).json({
+                            message: 'Duration must be a positive number'
+                        });
+                    }
+                    const newEndTime = Math.floor(startDate.getTime() / 1000) + durationInSeconds;
+                    product.endTime = newEndTime;
+                }
+            } else if (durationInMinutes !== undefined) {
+                // Nếu không thay đổi startTime, nhưng có durationInMinutes mới
+                const durationInSeconds = parseInt(durationInMinutes, 10) * 60;
+                if (isNaN(durationInSeconds) || durationInSeconds <= 0) {
+                    return res.status(400).json({
+                        message: 'Duration must be a positive number'
+                    });
+                }
+                const currentTime = Math.floor(Date.now() / 1000);
+                const newEndTime = currentTime + durationInSeconds;
+                product.endTime = newEndTime;
+            }
 
             if (imageFile) {
+                // Nếu có tệp hình ảnh mới, upload và cập nhật
                 const imageUrl = await uploadImage(imageFile);
                 product.imageUrl = imageUrl;
             }
@@ -286,3 +357,4 @@ export const editProduct = async (req, res) => {
         });
     }
 };
+

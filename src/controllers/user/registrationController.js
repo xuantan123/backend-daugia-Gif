@@ -1,40 +1,43 @@
 import Registration from '../../models/user/Registration.js';
-import ProfileUser from '../../models/user/ProfileUser.js';
+import Info from '../../models/Login/Info.js';
 import Auction from '../../models/author/AuctionAuthor';
 
-export const registerForAuction = async (req, res) => {
+export const registerUserForAuction = async (req, res) => {
+  console.log("Function called"); // Kiểm tra xem hàm có được gọi không
+  console.log(req.body); // Kiểm tra thông tin nhận được
+
+  const { userId, auctionId } = req.body; // Lấy userId và auctionId từ yêu cầu
+  console.log("UserId: ", userId);
   try {
-    const { userId, auctionId } = req.body;
+      // Kiểm tra xem người dùng và đấu giá có tồn tại không
+      const user = await Info.findByPk(userId);
+      const auction = await Auction.findByPk(auctionId);
 
-    // Kiểm tra nếu người dùng và cuộc đấu giá có tồn tại
-    const user = await ProfileUser.findByPk(userId);
-    const auction = await Auction.findByPk(auctionId);
-
-    if (!user || !auction) {
-      return res.status(404).json({ error: 'User or Auction not found' });
-    }
-
-    // Tạo bản ghi đăng ký trong bảng Registration
-    const [registration, created] = await Registration.findOrCreate({
-      where: {
-        userId: userId,
-        auctionId: auctionId
-      },
-      defaults: {
-        userId,
-        auctionId
+      if (!user || !auction) {
+          return res.status(404).json({
+              errorCode: 1,
+              message: 'User or auction not found',
+          });
       }
-    });
 
-    if (!created) {
-      return res.status(400).json({ error: 'User already registered for this auction' });
-    }
+      // Tạo mới một bản ghi đăng ký
+      const registration = await Registration.create({ userId, auctionId });
 
-    return res.status(201).json({ message: 'Registration successful', registration });
+      res.status(201).json({
+          errorCode: 0,
+          message: 'User registered for auction successfully',
+          data: registration,
+      });
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+      console.error("Server error:", error); // In chi tiết lỗi ra console
+      console.error("Error details:", JSON.stringify(error, null, 2)); // In thông tin lỗi chi tiết
+      res.status(500).json({
+          message: "Đã xảy ra lỗi!",
+          error: error.message || error, // Trả về thông điệp lỗi cụ thể
+      });
   }
 };
+
 
 // Lấy danh sách các cuộc đấu giá mà người dùng đã đăng ký
 export const getRegisteredAuctions = async (req, res) => {
@@ -42,7 +45,7 @@ export const getRegisteredAuctions = async (req, res) => {
     const { userId } = req.params;
 
     // Kiểm tra nếu người dùng có tồn tại
-    const user = await ProfileUser.findByPk(userId);
+    const user = await Info.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

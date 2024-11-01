@@ -1,47 +1,30 @@
 import express from 'express';
 import { upload } from '../middleware/multerConfig.js';
-import { handleSignUpUser } from '../controllers/user/signupuserController.js';
-import { handleLoginUser } from '../controllers/user/signinuserController.js';
-import { handleProfileUser, handleEditProfileUser } from '../controllers/user/profileuserControllers.js';
-import { getTokenBalance } from "../controllers/user/wallet/TokenWallet.js";
-import { handleSignUpAuthor } from '../controllers/author/signupauthorController.js';
-import { handleLoginAuthor } from '../controllers/author/signinauthorController.js';
-import { handleProfileAuthor, handleEditProfileAuthor } from '../controllers/author/profileauthorController.js';
-import { handleEmailUser } from '../controllers/user/EmailUserControllers.js';
-import { handlEmailAuthor } from '../controllers/author/EmailAuthorController.js';
+import { register , login } from '../controllers/Login/LoginController.js';
+import { createInfo , updateInfo , deleteInfo , getFullnameByLoginId } from '../controllers/Login/InfoCotroller.js';
 import { mintToken  } from "../controllers/smartcontract/mintController.js";
 import { transferToken } from "../controllers/smartcontract/transferController.js";
 import { approveToken , allowanceToken  } from "../controllers/smartcontract/approveController.js";
 import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , checkAuctionStatus  } from "../controllers/author/auctionProduct.js";
-import { placeBid ,  getAuctionDetails , endAuction , getBids , getCurrentHighestBidder , getCurrentHighestBid } from '../controllers/smartcontract/bidController.js';
-import { registerForAuction , getRegisteredAuctions } from "../controllers/user/registrationController.js";
+import { placeBid ,  getAuctionDetails , endAuction , getBids , getCurrentHighestBidder , getCurrentHighestBid  } from '../controllers/smartcontract/bidController.js';
+import { registerUserForAuction , getRegisteredAuctions } from "../controllers/user/registrationController.js";
 
 const router = express.Router();
 
 const initWebRoutes = (app) => {
-    router.post('/api/signupuser', handleSignUpUser);
-    router.post('/api/loginuser', handleLoginUser);
-    router.route('/api/profileuser/:email')
-        .post(handleProfileUser)
-        .get(handleEmailUser);
-    router.post('/api/profileuser', handleProfileUser);
-    router.put('/api/profileuser/:id', handleEditProfileUser);
-    router.get("/api/connect-wallet/:walletAddress", getTokenBalance);
     
+    router.post('/api/register', register);
+    router.post('/api/login', login);
+    router.post('/api/createInfo', createInfo);
+    router.put('/api/updateInfo/:id', updateInfo);
+    router.delete('/api/deleteInfo/:id', deleteInfo);
+    router.get('/api/info/fullname/:id', getFullnameByLoginId);
 
-    router.post('/api/signupauthor', handleSignUpAuthor);
-    router.post('/api/loginauthor', handleLoginAuthor);
-    router.post('/api/profileauthor/:email', handleProfileAuthor);
-    router.get('/api/profileauthor/:email', handlEmailAuthor);
-    router.post('/api/profileauthor', handleProfileAuthor);
-    router.put('/api/profileauthor/:id', handleEditProfileAuthor);
-    
     router.post('/api/mint', mintToken );
     router.post('/api/transfer', transferToken);
-    router.post('/api/approve',approveToken);
+    router.post('/api/approve', approveToken);
     router.post('/api/allowance', allowanceToken);
     
-
     router.post('/api/create',upload.single('image'), createAuctionItem);
     router.get('/api/auction/status', checkAuctionStatus);
     router.get('/api/products/author/:authorId', getProductsByAuthorId);
@@ -55,7 +38,7 @@ const initWebRoutes = (app) => {
     router.get('/api/auctions/:auctionId/current-highest-bidder', getCurrentHighestBidder);
     router.get('/api/auctions/:auctionId/current-highest-bid', getCurrentHighestBid);
 
-    router.post('/api/register', registerForAuction);
+    router.post('/api/registerUser', registerUserForAuction);
     router.get('/api/:userId/auctions', getRegisteredAuctions);
 
     router.get('/', (req, res) => {

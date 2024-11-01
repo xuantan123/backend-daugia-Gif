@@ -1,7 +1,8 @@
+// migrations/20230924000003-create-auction.js
 'use strict';
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Auctions', {
       id: {
         type: Sequelize.INTEGER,
@@ -26,6 +27,10 @@ module.exports = {
         type: Sequelize.BIGINT,
         allowNull: false,
       },
+      startTime: {
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
       active: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
@@ -34,26 +39,28 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'ProfileAuthor', 
+          model: 'Info', // Đảm bảo rằng bảng này đã được tạo
           key: 'id',
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE', // Xóa theo cách Cascade
       },
       txHash: {
         type: Sequelize.STRING,
       },
       createdAt: {
-        allowNull: false,
         type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn('now'),
       },
       updatedAt: {
-        allowNull: false,
         type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn('now'),
       },
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Auctions');
   },
 };

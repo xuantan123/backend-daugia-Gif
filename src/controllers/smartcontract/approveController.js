@@ -11,7 +11,7 @@ const wallet = new ethers.Wallet(privateKey, provider);
 const tokenContract = new ethers.Contract(contractAddress, abi, wallet);
 
 // Hàm phê duyệt token
-const approveToken = async (req, res) => {
+export const approveToken = async (req, res) => {
     const { spender, amount } = req.body;
 
     console.log('Tham số nhận được:', req.body);
@@ -80,7 +80,7 @@ const approveToken = async (req, res) => {
     }
 };
 // Hàm lấy thông tin allowance
-const allowanceToken = async (req, res) => {
+export const allowanceToken = async (req, res) => {
     const { owner, spender } = req.body;
 
     console.log('Tham số nhận được:', req.body);
@@ -113,11 +113,5 @@ const allowanceToken = async (req, res) => {
             error: error.message
         });
     }
-};
-
-
-module.exports = {
-    approveToken,
-    allowanceToken, // Xuất hàm allowanceToken
 };
 

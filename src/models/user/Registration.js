@@ -1,41 +1,47 @@
-// models/Registration.js
-import { Model, DataTypes } from 'sequelize';
-import db from '../index.js';
-import ProfileUser from './ProfileUser.js';
-import Auction from '../author/AuctionAuthor.js';
+const { Model, DataTypes } = require('sequelize');
+const db = require('../index');
 
 class Registration extends Model {
   static associate(models) {
-    Registration.belongsTo(models.ProfileUser, {
+    // Mối quan hệ với bảng Info
+    Registration.belongsTo(models.Info, {
       foreignKey: 'userId',
-      as: 'user',
+      as: 'user', // Alias để dễ dàng truy cập
     });
+    // Mối quan hệ với bảng Auction
     Registration.belongsTo(models.Auction, {
       foreignKey: 'auctionId',
-      as: 'auction',
+      as: 'auction', // Alias để dễ dàng truy cập
     });
   }
 }
 
 Registration.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'Info', // Tên bảng liên kết
+      key: 'id', // Khóa chính của bảng Info
+    },
+    onUpdate: 'CASCADE', // Cập nhật liên kết khi Info thay đổi
+    onDelete: 'CASCADE', // Xóa liên kết khi Info bị xóa
   },
   auctionId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'Auctions', // Tên bảng liên kết
+      key: 'id', // Khóa chính của bảng Auctions
+    },
+    onUpdate: 'CASCADE', // Cập nhật liên kết khi Auctions thay đổi
+    onDelete: 'CASCADE', // Xóa liên kết khi Auctions bị xóa
   },
 }, {
   sequelize: db.sequelize,
   modelName: 'Registration',
   tableName: 'Registrations',
-  timestamps: true,
+  timestamps: true, // Tự động thêm createdAt và updatedAt
 });
 
-export default Registration;
+module.exports = Registration;

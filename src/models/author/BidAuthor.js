@@ -1,16 +1,13 @@
-import { Model, DataTypes } from 'sequelize';
-import db from '../index';
+const { Model, DataTypes } = require('sequelize');
+const db = require('../index');
 
 class Bid extends Model {
   static associate(models) {
-    // Liên kết với bảng Auction (mỗi giá thầu thuộc về một cuộc đấu giá)
     Bid.belongsTo(models.Auction, {
       foreignKey: 'auctionId',
       as: 'auction',
     });
-
-    // Liên kết với bảng ProfileUser (mỗi giá thầu thuộc về một người dùng)
-    Bid.belongsTo(models.ProfileUser, {
+    Bid.belongsTo(models.Info, {
       foreignKey: 'bidderId',
       as: 'bidder',
     });
@@ -18,11 +15,6 @@ class Bid extends Model {
 }
 
 Bid.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
   amount: {
     type: DataTypes.DECIMAL(18, 2),
     allowNull: false,
@@ -31,7 +23,7 @@ Bid.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'Auctions', // Tên bảng
+      model: 'Auctions',
       key: 'id',
     },
   },
@@ -39,18 +31,15 @@ Bid.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'ProfileUser', // Tên bảng
+      model: 'Info',
       key: 'id',
     },
   },
-  txHash: {
-    type: DataTypes.STRING,
-    allowNull: false, // Hoặc true nếu bạn muốn cho phép NULL
-},
+  txHash: DataTypes.STRING,
 }, {
   sequelize: db.sequelize,
   modelName: 'Bid',
   tableName: 'Bids',
 });
 
-export default Bid;
+module.exports = Bid;

@@ -1,15 +1,12 @@
-// models/Auction.js
-import { Model, DataTypes } from 'sequelize';
-import db from '../index.js';
-import Registration from '../user/Registration.js';
-import ProfileUser from '../user/ProfileUser.js';
+const { Model, DataTypes } = require('sequelize');
+const db = require('../index');
 
 class Auction extends Model {
   static associate(models) {
-    Auction.belongsToMany(models.ProfileUser, { 
-      through: models.Registration, // Sử dụng models để đảm bảo đúng
-      foreignKey: 'auctionId', 
-      as: 'registeredUsers' 
+    Auction.belongsToMany(models.Info, {
+      through: models.Registration,
+      foreignKey: 'auctionId',
+      as: 'registeredUsers'
     });
     Auction.hasOne(models.AuctionResult, {
       foreignKey: 'auctionId',
@@ -25,27 +22,22 @@ class Auction extends Model {
 }
 
 Auction.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
   productName: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  description: {
-    type: DataTypes.TEXT,
-  },
-  imageUrl: {
-    type: DataTypes.STRING,
-  },
+  description: DataTypes.TEXT,
+  imageUrl: DataTypes.STRING,
   startingPrice: {
     type: DataTypes.DECIMAL(18, 2),
     allowNull: false,
   },
   endTime: {
-    type: DataTypes.BIGINT, // Phù hợp với smart contract
+    type: DataTypes.BIGINT,
+    allowNull: false,
+  },
+  startTime: {
+    type: DataTypes.DATE,
     allowNull: false,
   },
   active: {
@@ -56,18 +48,15 @@ Auction.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'ProfileUser',
+      model: 'Info',
       key: 'id',
     },
   },
-  txHash: {
-    type: DataTypes.STRING,
-  },
+  txHash: DataTypes.STRING,
 }, {
   sequelize: db.sequelize,
   modelName: 'Auction',
   tableName: 'Auctions',
-  timestamps: true,
 });
 
-export default Auction;
+module.exports = Auction;
