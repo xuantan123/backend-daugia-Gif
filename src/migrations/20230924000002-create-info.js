@@ -32,6 +32,8 @@ module.exports = {
       },
       loginId: {
         type: Sequelize.INTEGER,
+        unique: true,
+        allowNull: true,
         references: {
           model: 'Login',
           key: 'id',

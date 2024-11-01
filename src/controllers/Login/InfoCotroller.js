@@ -8,11 +8,24 @@ const convertGender = (gender) => {
   return null; 
 };
 
-// Nhập thông tin
 export const createInfo = async (req, res) => {
   const { fullname, nickname, dateOfBirth, gender, country, walletAddress, loginId } = req.body;
 
   try {
+    // Kiểm tra xem loginId có tồn tại trong bảng Login không
+    const loginEntry = await Login.findOne({ where: { id: loginId } });
+
+    if (!loginEntry) {
+      return res.status(400).json({ message: 'loginId không hợp lệ!' });
+    }
+
+    // Kiểm tra xem loginId đã tồn tại trong bảng Info chưa
+    const existingInfo = await Info.findOne({ where: { loginId } });
+
+    if (existingInfo) {
+      return res.status(400).json({ message: 'loginId đã được sử dụng!' });
+    }
+
     const GenderEdit = convertGender(gender);
 
     // Tạo thông tin mới
@@ -31,6 +44,7 @@ export const createInfo = async (req, res) => {
     return res.status(500).json({ message: 'Đã xảy ra lỗi!', error });
   }
 };
+
 
 export const updateInfo = async (req, res) => {
   const { id } = req.params; // ID của thông tin cần sửa
@@ -100,7 +114,7 @@ export const deleteInfo = async (req, res) => {
     return res.status(500).json({ message: 'Đã xảy ra lỗi!', error });
   }
 };
-export const getFullnameByLoginId = async (req, res) => {
+export const getFullnameById = async (req, res) => {
   const id = req.params.id; // Lấy loginId từ params
   console.log("Login ID requested:", id);
 
@@ -136,4 +150,39 @@ export const getFullnameByLoginId = async (req, res) => {
       });
   }
 };
+export const getFullnameByLoginId = async (req, res) => {
+  const loginId = req.params.loginId; // Lấy loginId từ params
+  console.log("Login ID requested:", loginId);
 
+  try {
+      // Tìm Info dựa trên loginId
+      const info = await Info.findOne({
+          where: { loginId }, 
+      });
+
+      if (info) {
+          // Nếu tìm thấy, trả về fullname
+          res.status(200).json({
+              errorCode: 0,
+              message: 'Get fullname successfully',
+              data: {
+                  fullname: info.fullname, // Chỉ trả về fullname
+              }
+          });
+      } else {
+          // Nếu không tìm thấy
+          res.status(404).json({
+              errorCode: 1,
+              message: 'Info not found'
+          });
+      }
+  } catch (error) {
+      // Xử lý lỗi
+      console.error("Server error:", error);
+      res.status(500).json({
+          errorCode: 2,
+          message: 'Server error',
+          error: error.message
+      });
+  }
+};

@@ -1,12 +1,13 @@
 // models/Info.js
 const { Model, DataTypes } = require('sequelize');
 const db = require('../index');
+import AuctionResult from '../author/AuctionResult';
 
 class Info extends Model {
   static associate(models) {
     Info.belongsTo(models.Login, {
       foreignKey: 'loginId',
-      as: 'login', // Đặt alias khác để tránh nhầm lẫn
+      as: 'login', 
     });
     Info.belongsToMany(models.Auction, {
       through: models.Registration,
@@ -27,6 +28,11 @@ class Info extends Model {
 }
 
 Info.init({
+  id: { // Khai báo khóa chính nếu bạn chưa có
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   fullname: DataTypes.STRING,
   dateOfBirth: DataTypes.DATE,
   gender: DataTypes.BOOLEAN,
@@ -38,6 +44,8 @@ Info.init({
   },
   loginId: {
     type: DataTypes.INTEGER,
+    allowNull: false,
+    unique: true,
     references: {
       model: 'Login',
       key: 'id',

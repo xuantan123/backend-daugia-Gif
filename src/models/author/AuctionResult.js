@@ -1,16 +1,12 @@
 const { Model, DataTypes } = require('sequelize');
 const db = require('../index');
+import Info from '../../models/Login/Info';
 
 class AuctionResult extends Model {
   static associate(models) {
     AuctionResult.belongsTo(models.Auction, {
       foreignKey: 'auctionId',
       as: 'auction',
-      onDelete: 'CASCADE',
-    });
-    AuctionResult.belongsTo(models.Info, {
-      foreignKey: 'winnerAddress',
-      as: 'winner',
       onDelete: 'CASCADE',
     });
   }
