@@ -5,7 +5,7 @@ class Login extends Model {
   static associate(models) {
     Login.hasOne(models.Info, {
       foreignKey: 'loginId',
-      as: 'info', // Đặt alias để dễ dàng truy cập
+      as: 'info', 
       onDelete: 'SET NULL',
     });
   }

@@ -165,9 +165,7 @@ export const getFullnameByLoginId = async (req, res) => {
           res.status(200).json({
               errorCode: 0,
               message: 'Get fullname successfully',
-              data: {
-                  fullname: info.fullname, // Chỉ trả về fullname
-              }
+              data: info,
           });
       } else {
           // Nếu không tìm thấy

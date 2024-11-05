@@ -311,9 +311,12 @@ export const getWinnerEmail = async (req, res) => {
             - Tiêu đề: ${auctionInfo.title}
             - Mô tả: ${auctionInfo.description}
             - Giá khởi điểm: ${auctionInfo.startingPrice}
+            - Hình ảnh sản phẩm : ${auctionInfo.imageUrl}
             - Số tiền trúng đấu giá cao nhất: ${auctionResult.highestBid}
-            - Thời gian kết thúc: ${auctionInfo.endTime}
+           - Thời gian kết thúc: ${new Date(auctionInfo.endTime * 1000).toLocaleString('vi-VN')}
         `;
+
+        
         await sendEmail(winnerLogin.email, subject, text); // Gửi email cho người thắng
 
         return res.status(200).send({
