@@ -4,7 +4,7 @@ const db = require('../index');
 class Registration extends Model {
   static associate(models) {
     // Mối quan hệ với bảng Info
-    Registration.belongsTo(models.Info, {
+    Registration.belongsTo(models.Login, {
       foreignKey: 'userId',
       as: 'user', // Alias để dễ dàng truy cập
     });
@@ -21,7 +21,7 @@ Registration.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'Info', // Tên bảng liên kết
+      model: 'Login', // Tên bảng liên kết
       key: 'id', // Khóa chính của bảng Info
     },
     onUpdate: 'CASCADE', // Cập nhật liên kết khi Info thay đổi

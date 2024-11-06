@@ -21,6 +21,10 @@ module.exports = {
         type: Sequelize.ENUM('user', 'author'), // Phân chia vai trò trong bảng Login
         allowNull: false,
       },
+      verified: { 
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+    },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

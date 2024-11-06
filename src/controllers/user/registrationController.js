@@ -1,51 +1,56 @@
 import Registration from '../../models/user/Registration.js';
-import Info from '../../models/Login/Info.js';
-import Auction from '../../models/author/AuctionAuthor';
+import Login from '../../models/Login/Login.js'; // Import Login model
+import Auction from '../../models/author/AuctionAuthor.js'; // Auction model
 
 export const registerUserForAuction = async (req, res) => {
-  console.log("Function called"); // Kiểm tra xem hàm có được gọi không
-  console.log(req.body); // Kiểm tra thông tin nhận được
+  console.log("Function called");
+  console.log(req.body);
 
-  const { userId, auctionId } = req.body; // Lấy userId và auctionId từ yêu cầu
+  const { userId, auctionId } = req.body;
   console.log("UserId: ", userId);
   try {
-      // Kiểm tra xem người dùng và đấu giá có tồn tại không
-      const user = await Info.findByPk(userId);
-      const auction = await Auction.findByPk(auctionId);
+    // Kiểm tra xem người dùng và đấu giá có tồn tại không
+    const user = await Login.findByPk(userId); // Sử dụng Login thay vì Info
+    const auction = await Auction.findByPk(auctionId);
 
-      if (!user || !auction) {
-          return res.status(404).json({
-              errorCode: 1,
-              message: 'User or auction not found',
-          });
-      }
-
-      // Tạo mới một bản ghi đăng ký
-      const registration = await Registration.create({ userId, auctionId });
-
-      res.status(201).json({
-          errorCode: 0,
-          message: 'User registered for auction successfully',
-          data: registration,
+    if (!user || !auction) {
+      return res.status(404).json({
+        errorCode: 1,
+        message: 'User or auction not found',
       });
+    }
+
+    // Kiểm tra nếu người dùng là author hay không
+    if (user.role === 'author') {
+      return res.status(403).json({
+        errorCode: 2,
+        message: 'Authors cannot register for auctions',
+      });
+    }
+
+    // Tạo mới một bản ghi đăng ký
+    const registration = await Registration.create({ userId, auctionId });
+
+    res.status(201).json({
+      errorCode: 0,
+      message: 'User registered for auction successfully',
+      data: registration,
+    });
   } catch (error) {
-      console.error("Server error:", error); // In chi tiết lỗi ra console
-      console.error("Error details:", JSON.stringify(error, null, 2)); // In thông tin lỗi chi tiết
-      res.status(500).json({
-          message: "Đã xảy ra lỗi!",
-          error: error.message || error, // Trả về thông điệp lỗi cụ thể
-      });
+    console.error("Server error:", error);
+    console.error("Error details:", JSON.stringify(error, null, 2));
+    res.status(500).json({
+      message: "Đã xảy ra lỗi!",
+      error: error.message || error,
+    });
   }
 };
 
-
-// Lấy danh sách các cuộc đấu giá mà người dùng đã đăng ký
 export const getRegisteredAuctions = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Kiểm tra nếu người dùng có tồn tại
-    const user = await Info.findByPk(userId);
+    const user = await Login.findByPk(userId); 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -53,7 +58,7 @@ export const getRegisteredAuctions = async (req, res) => {
     // Lấy danh sách auctionId mà người dùng đã đăng ký từ bảng Registration
     const registrations = await Registration.findAll({
       where: { userId },
-      attributes: ['auctionId'], // Chỉ cần lấy auctionId
+      attributes: ['auctionId'],
     });
 
     // Nếu người dùng chưa đăng ký cuộc đấu giá nào
@@ -74,5 +79,30 @@ export const getRegisteredAuctions = async (req, res) => {
     return res.status(200).json(registeredAuctions);
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteRegisterById = async (req, res) => {
+  const { id } = req.params; 
+
+  try {
+    const registration = await Registration.findByPk(id);
+
+    if (!registration) {
+      return res.status(404).json({ message: 'Registration not found' });
+    }
+
+    await registration.destroy();
+
+    return res.status(200).json({
+      errorCode: 0,
+      message: 'Registration deleted successfully',
+    });
+  } catch (error) {
+    console.error('Server error:', error);
+    return res.status(500).json({
+      message: 'Đã xảy ra lỗi khi xóa đăng ký!',
+      error: error.message || error,
+    });
   }
 };

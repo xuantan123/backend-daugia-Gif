@@ -35,11 +35,11 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
-      authorId: {
+      loginId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Info', // Đảm bảo rằng bảng này đã được tạo
+          model: 'Login', // Thay đổi liên kết tới bảng Login
           key: 'id',
         },
         onDelete: 'CASCADE', // Xóa theo cách Cascade

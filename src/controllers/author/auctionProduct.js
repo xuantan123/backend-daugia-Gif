@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 import { ethers } from 'ethers';
 import Info from "../../models/Login/Info";
+import Login from "../../models/Login/Login";
 
 // Cấu hình Cloudinary
 cloudinary.config({
@@ -27,50 +28,46 @@ const uploadImage = async (imageFile) => {
 export const createAuctionItem = async (req, res) => {
     try {
         const {
-            email,
             productname,
             description,
             startingPrice,
             durationInMinutes,
-            authorId,
-            startTime, // Thêm trường startTime
+            loginId, 
+            startTime,
         } = req.body;
 
         const imageFile = req.file;
 
-        // Kiểm tra các trường không được để trống
-        if (!productname || !authorId || !startingPrice || durationInMinutes === undefined || !description || !startTime) {
+        // Kiểm tra các trường bắt buộc
+        if (!productname || !loginId || !startingPrice || durationInMinutes === undefined || !description || !startTime) {
             return res.status(400).json({
-                message: 'Product name, Author ID, starting price, duration, description, and start time cannot be null'
+                message: 'Product name, Login ID, starting price, duration, description, and start time cannot be null'
             });
         }
 
-        // Kiểm tra giá khởi điểm
+        // Kiểm tra vai trò của người dùng
+        const loginRecord = await Login.findByPk(loginId);
+        if (!loginRecord || loginRecord.role !== 'author') {
+            return res.status(403).json({
+                message: 'Only authors are allowed to create auction items'
+            });
+        }
+
+        // Tiếp tục xử lý tạo đấu giá như bình thường
         if (isNaN(startingPrice) || startingPrice <= 0) {
-            return res.status(400).json({
+            return res.status(401).json({
                 message: 'Starting price must be a positive number'
             });
         }
 
-        // Chuyển đổi durationInMinutes thành số giây
-        const durationInSeconds = parseInt(durationInMinutes, 10) * 60; // Chuyển đổi phút sang giây
-        
-        // Kiểm tra thời gian đấu giá
+        const durationInSeconds = parseInt(durationInMinutes, 10) * 60;
+
         if (isNaN(durationInSeconds) || durationInSeconds <= 0) {
             return res.status(400).json({
                 message: 'Duration must be a positive number'
             });
         }
 
-        // Kiểm tra sự tồn tại của authorId
-        const authorExists = await Info.findByPk(authorId);
-        if (!authorExists) {
-            return res.status(400).json({
-                message: 'Author ID does not exist'
-            });
-        }
-
-        // Upload hình ảnh
         let imageUrl;
         try {
             imageUrl = await uploadImage(imageFile);
@@ -82,38 +79,30 @@ export const createAuctionItem = async (req, res) => {
             });
         }
 
-        // Chuyển đổi startTime từ chuỗi sang đối tượng Date
-        const startDate = new Date(startTime); // Đảm bảo startTime được định dạng đúng (YYYY-MM-DDTHH:mm)
+        const startDate = new Date(startTime);
+        const endTimeInSeconds = Math.floor(startDate.getTime() / 1000) + durationInSeconds;
 
-        // Tính thời gian kết thúc
-        const endTimeInSeconds = Math.floor(startDate.getTime() / 1000) + durationInSeconds; // Lưu thời gian kết thúc dưới dạng số giây
-
-        // Tạo cuộc đấu giá
         const tx = await auctionContract.createAuction(productname, description, imageUrl, startingPrice, durationInSeconds);
-        const txHash = tx.hash; // Lưu txHash
-        await tx.wait(); // Chờ cho giao dịch hoàn tất
+        const txHash = tx.hash;
+        await tx.wait();
 
-        // Lưu thông tin vào cơ sở dữ liệu
         const newProduct = await AuctionItem.create({
-            email,
-            authorId,
+            loginId, 
             productName: productname,
             description,
             startingPrice,
-            highestBid: 0,
-            highestBidder: null,
-            startTime: startDate, // Lưu thời gian bắt đầu
-            endTime: endTimeInSeconds, // Lưu thời gian kết thúc
-            active: true, // Khởi tạo trạng thái active là true
+            startTime: startDate,
+            endTime: endTimeInSeconds,
+            active: true,
             imageUrl,
-            txHash, 
+            txHash,
         });
 
         res.status(200).json({
             errorCode: 0,
             message: 'Create successful auction item',
             product: newProduct,
-            txHash, 
+            txHash,
         });
     } catch (error) {
         console.error('Error when creating auction item:', error);
@@ -215,15 +204,15 @@ export const getImage = (req, res) => {
 // Lấy thông tin sản phẩm theo authorId
 export const getProductsByAuthorId = async (req, res) => {
     try {
-        const { authorId } = req.params;
+        const { loginId } = req.params;
 
-        if (!authorId) {
+        if (!loginId) {
             return res.status(400).json({ message: 'Author ID cannot be blank' });
         }
 
         // Tìm tất cả sản phẩm theo authorId
         const products = await AuctionItem.findAll({
-            where: { authorId }
+            where: { loginId }
         });
 
         if (products.length > 0) {

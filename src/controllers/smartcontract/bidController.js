@@ -147,7 +147,7 @@ export const getBids = async (req, res) => {
 
         // Giả sử bids là một mảng chứa các đối tượng có cấu trúc như { amount, bidder }
         const formattedBids = bids.map(bid => ({
-            amount: bid.amount.toString(), // Chuyển đổi BigInt thành chuỗi
+            amount: ethers.formatUnits(bid.amount, 18),
             bidder: bid.bidder,
             // Thêm các thuộc tính khác nếu có
         }));
@@ -223,7 +223,7 @@ export const getAuctionResult = async (req, res) => {
         const auctionResult = await AuctionResult.create({
             auctionId: result.auctionId.toString(),
             winnerAddress: result.winner, // Địa chỉ người thắng
-            highestBid: result.highestBid.toString() // Chuyển đổi BigInt thành chuỗi
+            highestBid: ethers.formatUnits(result.highestBid,18) // Chuyển đổi BigInt thành chuỗi
         });
 
         return res.status(200).send({
@@ -276,6 +276,7 @@ export const getWinnerEmail = async (req, res) => {
         // Lấy kết quả từ smart contract
         const result = await auctionContract.auctionResult(auctionId);
         const winnerAddress = result.winner;
+        const highestBid = result.highestBid;
 
         // Tìm kiếm trong bảng Info để lấy loginId dựa trên walletAddress
         const winnerInfo = await Info.findOne({ where: { walletAddress: winnerAddress } });
@@ -297,28 +298,34 @@ export const getWinnerEmail = async (req, res) => {
         if (!auctionInfo) {
             return res.status(404).send({ message: 'Không tìm thấy thông tin đấu giá cho auctionId.' });
         }
-        const auctionResult = await AuctionResult.findOne({ where: { auctionId: auctionId } });
 
-        if (!auctionResult) {
-            return res.status(404).send({ message: 'Không tìm thấy thông tin kết quả đấu giá cho auctionId.' });
-        }
-
+        const highestBidInTokens = ethers.formatUnits(highestBid, 18);
         // Gửi email thông báo cho người thắng
-        const subject = 'Chúc mừng bạn đã thắng cuộc đấu giá!';
+        const subject = '🎉 Chúc mừng bạn đã thắng cuộc đấu giá trên nền tảng của chúng tôi! 🎉';
         const text = `
-            Bạn đã thắng cuộc đấu giá cho auctionId: ${auctionId}.
-            Thông tin đấu giá:
-            - Tiêu đề: ${auctionInfo.title}
-            - Mô tả: ${auctionInfo.description}
-            - Giá khởi điểm: ${auctionInfo.startingPrice}
-            - Hình ảnh sản phẩm : ${auctionInfo.imageUrl}
-            - Số tiền trúng đấu giá cao nhất: ${auctionResult.highestBid}
-           - Thời gian kết thúc: ${new Date(auctionInfo.endTime * 1000).toLocaleString('vi-VN')}
+            Xin chào,
+
+            Chúng tôi rất vui mừng thông báo rằng bạn đã là người chiến thắng trong cuộc đấu giá! Dưới đây là thông tin chi tiết:
+
+            🔹 **Thông tin sản phẩm:**
+                - Tên sản phẩm: ${auctionInfo.productName}
+                - Mô tả: ${auctionInfo.description}
+                - Giá khởi điểm: ${auctionInfo.startingPrice} tokens
+                - Hình ảnh sản phẩm: ${auctionInfo.imageUrl ? auctionInfo.imageUrl : "Không có sẵn"}
+
+            🔹 **Thông tin đấu giá:**
+                - Số tiền thắng đấu giá: ${highestBidInTokens} tokens
+                - Thời gian kết thúc: ${new Date(auctionInfo.endTime * 1000).toLocaleString('vi-VN')}
+
+            Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi qua email.
+
+            Trân trọng,
+
+            Đội ngũ hỗ trợ nền tảng Celestial.
         `;
 
+        await sendEmail(winnerLogin.email, subject, text);
         
-        await sendEmail(winnerLogin.email, subject, text); // Gửi email cho người thắng
-
         return res.status(200).send({
             auctionId: auctionId,
             winnerEmail: winnerLogin.email,

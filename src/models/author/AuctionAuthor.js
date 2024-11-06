@@ -3,7 +3,7 @@ const db = require('../index');
 
 class Auction extends Model {
   static associate(models) {
-    Auction.belongsToMany(models.Info, {
+    Auction.belongsToMany(models.Login, {
       through: models.Registration,
       foreignKey: 'auctionId',
       as: 'registeredUsers'
@@ -44,13 +44,14 @@ Auction.init({
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-  authorId: {
+  loginId: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: 'Info',
+      model: 'Login', // Thay đổi liên kết tới bảng Login
       key: 'id',
     },
+    onDelete: 'CASCADE', // Xóa theo cách Cascade
   },
   txHash: DataTypes.STRING,
 }, {

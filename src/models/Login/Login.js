@@ -8,6 +8,11 @@ class Login extends Model {
       as: 'info', 
       onDelete: 'SET NULL',
     });
+    Login.belongsToMany(models.Auction, {
+      through: models.Registration,
+      foreignKey: 'userId',
+      as: 'registeredAuctions',
+    });
   }
 }
 
@@ -25,6 +30,10 @@ Login.init({
     type: DataTypes.ENUM('user', 'author'),
     allowNull: false,
   },
+  verified: { 
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+},
 }, {
   sequelize: db.sequelize,
   modelName: 'Login',
