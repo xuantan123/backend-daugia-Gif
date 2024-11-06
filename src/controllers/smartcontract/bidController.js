@@ -161,7 +161,50 @@ export const getBids = async (req, res) => {
         });
     }
 };
+export const getAmountBidByBidder = async (req, res) => {
+    const { bidderId } = req.params;
 
+    // Kiểm tra nếu bidderId không có trong request
+    if (!bidderId) {
+        return res.status(400).send('Thiếu bidderId.');
+    }
+
+    try {
+        // Truy vấn tất cả các bid của bidderId từ bảng Bids
+        const bids = await Bid.findAll({
+            where: {
+                bidderId: bidderId, // Tìm kiếm theo bidderId
+            }
+        });
+
+        // Kiểm tra nếu không tìm thấy bids nào
+        if (bids.length === 0) {
+            return res.status(404).send('Không tìm thấy bất kỳ bid nào cho bidderId này.');
+        }
+
+        // Tính tổng số tiền của các bid
+        const totalAmount = bids.reduce((sum, bid) => sum + parseFloat(bid.amount), 0);
+
+        // Trả về thông tin chi tiết từng bid và tổng số tiền
+        return res.status(200).send({
+            message: 'Lấy thông tin bids thành công.',
+            totalAmount: totalAmount, // Tổng số tiền đã bid
+            bids: bids.map(bid => ({
+                auctionId: bid.auctionId, // ID của cuộc đấu giá
+                bidAmount: bid.amount,    // Số tiền của bid
+                bidDate: bid.createdAt,   // Ngày giờ đặt bid
+                txHash: bid.txHash       // Hash giao dịch của bid
+            }))
+        });
+
+    } catch (error) {
+        console.error('Lỗi khi lấy thông tin bids:', error);
+        return res.status(500).send({
+            message: 'Có lỗi xảy ra khi lấy thông tin bids.',
+            error: error.message
+        });
+    }
+};
 // Hàm lấy người đặt giá cao nhất
 export const getCurrentHighestBidder = async (req, res) => {
     const { auctionId } = req.params;

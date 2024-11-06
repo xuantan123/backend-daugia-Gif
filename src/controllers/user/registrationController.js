@@ -55,32 +55,38 @@ export const getRegisteredAuctions = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Lấy danh sách auctionId mà người dùng đã đăng ký từ bảng Registration
     const registrations = await Registration.findAll({
       where: { userId },
-      attributes: ['auctionId'],
+      attributes: ['id', 'auctionId'],  
     });
-
-    // Nếu người dùng chưa đăng ký cuộc đấu giá nào
+    
     if (registrations.length === 0) {
       return res.status(404).json({ message: 'No auctions registered for this user' });
     }
-
-    // Lấy danh sách auctionId từ kết quả đăng ký
     const auctionIds = registrations.map(reg => reg.auctionId);
 
-    // Lấy thông tin chi tiết về các cuộc đấu giá từ bảng Auction
     const registeredAuctions = await Auction.findAll({
       where: {
         id: auctionIds,
       },
     });
 
-    return res.status(200).json(registeredAuctions);
+    const auctionsWithRegistrationId = registeredAuctions.map(auction => {
+
+      const registration = registrations.find(reg => reg.auctionId === auction.id);
+      
+      return {
+        ...auction.toJSON(),  
+        registrationId: registration.id, 
+      };
+    });
+
+    return res.status(200).json(auctionsWithRegistrationId);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
 };
+
 
 export const deleteRegisterById = async (req, res) => {
   const { id } = req.params; 
@@ -101,7 +107,7 @@ export const deleteRegisterById = async (req, res) => {
   } catch (error) {
     console.error('Server error:', error);
     return res.status(500).json({
-      message: 'Đã xảy ra lỗi khi xóa đăng ký!',
+      message: 'An error occurred while deleting the registration!',
       error: error.message || error,
     });
   }

@@ -6,7 +6,7 @@ import { mintToken  } from "../controllers/smartcontract/mintController.js";
 import { transferToken } from "../controllers/smartcontract/transferController.js";
 import { approveToken , allowanceToken  } from "../controllers/smartcontract/approveController.js";
 import { createAuctionItem , getProductsByAuthorId , deleteProduct , editProduct , checkAuctionStatus  } from "../controllers/author/auctionProduct.js";
-import { placeBid ,  getAuctionDetails , endAuction , getBids , getCurrentHighestBidder , getCurrentHighestBid , getAuctionResult , getWinnerEmail } from '../controllers/smartcontract/bidController.js';
+import { placeBid ,  getAuctionDetails , endAuction , getBids , getCurrentHighestBidder , getCurrentHighestBid , getAuctionResult , getWinnerEmail , getAmountBidByBidder } from '../controllers/smartcontract/bidController.js';
 import { registerUserForAuction , getRegisteredAuctions , deleteRegisterById } from "../controllers/user/registrationController.js";
 
 const router = express.Router();
@@ -38,11 +38,13 @@ const initWebRoutes = (app) => {
     router.get('/api/auctions/:auctionId', getAuctionDetails);
     router.post('/api/auctions/:auctionId/end', endAuction);
     router.get('/api/auctions/:auctionId/bids', getBids);
+
     router.get('/api/auctions/:auctionId/current-highest-bidder', getCurrentHighestBidder);
     router.get('/api/auctions/:auctionId/current-highest-bid', getCurrentHighestBid);
     router.get('/api/auction/:auctionId/result', getAuctionResult);
     router.get('/api/getEmailByWinnerAddress/:auctionId', getWinnerEmail);
-    
+    router.get('/api/getAmountBidByBidder/:bidder',getAmountBidByBidder);
+
     router.post('/api/registerUser', registerUserForAuction);
     router.get('/api/:userId/auctions', getRegisteredAuctions);
     router.delete('/api/deletregister/:id',deleteRegisterById);
